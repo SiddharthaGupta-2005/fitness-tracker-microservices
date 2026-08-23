@@ -11,50 +11,41 @@ const ActivityDetail = () => {
     const [isGenerating, setIsGenerating] = useState(true);
     const pollCountRef = useRef(0);
 
-    useEffect(() => {
-        let isMounted = true;
-        let timer = null;
-
-        const fetchActivityDetail = async () => {
-            try {
-                const response = await getActivityDetail(id);
-                if (isMounted) {
-                    setRecommendation(response.data);
+    const fetchActivityDetail = async () => {
+        try {
+            const response = await getActivityDetail(id);
+            setRecommendation(response.data);
+            setIsGenerating(false);
+            setLoading(false);
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                if (pollCountRef.current < 25) { // Poll for up to 50s
+                    pollCountRef.current += 1;
+                    setIsGenerating(true);
+                    setLoading(false);
+                    setTimeout(fetchActivityDetail, 2000);
+                } else {
                     setIsGenerating(false);
                     setLoading(false);
                 }
-            } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    if (pollCountRef.current < 15) { // Poll for up to 30s
-                        pollCountRef.current += 1;
-                        if (isMounted) {
-                            setIsGenerating(true);
-                            setLoading(false);
-                            timer = setTimeout(fetchActivityDetail, 2000);
-                        }
-                    } else {
-                        if (isMounted) {
-                            setIsGenerating(false);
-                            setLoading(false);
-                        }
-                    }
-                } else {
-                    console.error("Error fetching recommendation", error);
-                    if (isMounted) {
-                        setIsGenerating(false);
-                        setLoading(false);
-                    }
-                }
+            } else {
+                console.error("Error fetching recommendation", error);
+                setIsGenerating(false);
+                setLoading(false);
             }
-        };
+        }
+    };
 
+    useEffect(() => {
+        pollCountRef.current = 0;
         fetchActivityDetail();
-
-        return () => {
-            isMounted = false;
-            if (timer) clearTimeout(timer);
-        };
     }, [id]);
+
+    const handleManualRefresh = () => {
+        setLoading(true);
+        pollCountRef.current = 0;
+        fetchActivityDetail();
+    };
 
     if (loading) {
         return (
@@ -67,9 +58,14 @@ const ActivityDetail = () => {
 
     return (
         <Box sx={{ p: 2 }}>
-            <Button variant="outlined" onClick={() => navigate('/activities')} sx={{ mb: 2 }}>
-                ← Back to Activities
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Button variant="outlined" onClick={() => navigate('/activities')}>
+                    ← Back to Activities
+                </Button>
+                <Button variant="text" onClick={handleManualRefresh}>
+                    🔄 Refresh
+                </Button>
+            </Box>
             <Card>
                 <CardContent>
                     <Typography variant="h5" gutterBottom>AI Recommendation & Analysis</Typography>
@@ -137,9 +133,14 @@ const ActivityDetail = () => {
                     )}
 
                     {!isGenerating && !recommendation && (
-                        <Alert severity="info" sx={{ mt: 2 }}>
-                            No recommendation generated yet for this activity. Please check back shortly or retry.
-                        </Alert>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                No recommendation found yet for this activity.
+                            </Alert>
+                            <Button variant="contained" onClick={handleManualRefresh}>
+                                Check Again
+                            </Button>
+                        </Box>
                     )}
                 </CardContent>
             </Card>
