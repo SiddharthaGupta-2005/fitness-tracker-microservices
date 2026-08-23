@@ -29,7 +29,7 @@ public class ActivityAIService {
 
             return processAiResponse(activity,aiResponse);
         } catch (Exception e) {
-            log.error("Failed to get recommendation from Gemini AI, falling back to default recommendation: {}", e.getMessage());
+            log.error("Failed to get recommendation from AI Service, falling back to default recommendation: {}", e.getMessage());
             return createDefaultRecommendation(activity);
         }
     }
