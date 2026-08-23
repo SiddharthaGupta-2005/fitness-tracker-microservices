@@ -22,6 +22,9 @@ public class GeminiService {
     @Value("${groq.api.key:${gemini.api.key:${GROQ_API_KEY:${GEMINI_API_KEY:}}}}")
     private String geminiApiKey;
 
+    @Value("${groq.api.model:${GROQ_MODEL:llama-3.1-8b-instant}}")
+    private String groqModel;
+
     public GeminiService(WebClient.Builder webClientBuilder){
         this.webClient = webClientBuilder.build();
     }
@@ -31,18 +34,20 @@ public class GeminiService {
                 ? geminiApiUrl.trim() 
                 : "https://api.groq.com/openai/v1/chat/completions";
         String cleanKey = geminiApiKey != null ? geminiApiKey.trim() : "";
+        String cleanModel = groqModel != null && !groqModel.isBlank() ? groqModel.trim() : "llama-3.1-8b-instant";
 
         boolean isGroqOrOpenAI = cleanUrl.contains("groq.com") || cleanUrl.contains("openai") || cleanUrl.contains("openrouter");
 
-        log.info("AI Provider: {}, URL: {}, Key Present: {}", 
+        log.info("AI Provider: {}, URL: {}, Model: {}, Key Present: {}", 
                 isGroqOrOpenAI ? "Groq/OpenAI" : "Google Gemini", 
-                cleanUrl, 
+                cleanUrl,
+                cleanModel,
                 !cleanKey.isEmpty());
 
         if (isGroqOrOpenAI) {
             // Groq / OpenAI Compatible Request
             Map<String, Object> requestBody = Map.of(
-                    "model", "llama-3.3-70b-versatile",
+                    "model", cleanModel,
                     "messages", List.of(
                             Map.of("role", "system", "content", "You are an elite fitness trainer and exercise scientist. Always respond strictly in valid JSON format matching the schema requested by the user."),
                             Map.of("role", "user", "content", question)
