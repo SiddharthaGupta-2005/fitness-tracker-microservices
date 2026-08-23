@@ -81,6 +81,14 @@ function App() {
     window.location.href = keycloakLogoutUrl;
   };
 
+  const handleGoogleLogin = () => {
+    try {
+      pkceLogIn(undefined, { kc_idp_hint: 'google' });
+    } catch (e) {
+      console.error('Error initiating Google login:', e);
+    }
+  };
+
   const effectiveToken = pkceToken || reduxToken || inAppAuth.token;
   const effectiveUser = pkceTokenData || reduxUser || inAppAuth.user;
 
@@ -91,7 +99,8 @@ function App() {
         {!effectiveToken ? (
           <LoginHero 
             onLoginSuccess={handleInAppLoginSuccess} 
-            onKeycloakSso={pkceLogIn} 
+            onKeycloakSso={pkceLogIn}
+            onGoogleLogin={handleGoogleLogin} 
           />
         ) : (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0B0F19' }}>

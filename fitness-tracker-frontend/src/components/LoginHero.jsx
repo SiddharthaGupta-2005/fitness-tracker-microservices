@@ -42,7 +42,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
+const LoginHero = ({ onLoginSuccess, onKeycloakSso, onGoogleLogin }) => {
   const [tabIndex, setTabIndex] = useState(0); // 0: Sign In, 1: Sign Up
   
   // Sign In State
@@ -331,7 +331,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   fullWidth
                   variant="outlined"
                   size="large"
-                  onClick={loginWithGoogle}
+                  onClick={onGoogleLogin || loginWithGoogle}
                   sx={{
                     py: 1.4,
                     mb: 2.5,
