@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router';
 import { Box, Container, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthContext } from 'react-oauth2-code-pkce';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, logout } from './store/authSlice';
 import { darkTheme } from './theme';
 
@@ -49,29 +49,55 @@ const Dashboard = () => {
 };
 
 function App() {
-  const { token, tokenData, logIn, logOut } = useContext(AuthContext);
+  const { token: pkceToken, tokenData: pkceTokenData, logIn: pkceLogIn, logOut: pkceLogOut } = useContext(AuthContext);
   const dispatch = useDispatch();
+  
+  const reduxToken = useSelector((state) => state.auth?.token);
+  const reduxUser = useSelector((state) => state.auth?.user);
 
+  const [inAppAuth, setInAppAuth] = useState({
+    token: localStorage.getItem('token') || null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+  });
+
+  // Sync PKCE token if authenticated via Keycloak redirect
   useEffect(() => {
-    if (token) {
-      dispatch(setCredentials({ token, user: tokenData }));
+    if (pkceToken) {
+      dispatch(setCredentials({ token: pkceToken, user: pkceTokenData }));
+      setInAppAuth({ token: pkceToken, user: pkceTokenData });
     }
-  }, [token, tokenData, dispatch]);
+  }, [pkceToken, pkceTokenData, dispatch]);
+
+  const handleInAppLoginSuccess = (authResult) => {
+    dispatch(setCredentials(authResult));
+    setInAppAuth({ token: authResult.token, user: authResult.user });
+  };
 
   const handleLogout = () => {
     dispatch(logout());
-    logOut();
+    setInAppAuth({ token: null, user: null });
+    try {
+      pkceLogOut();
+    } catch (e) {
+      console.log('PKCE logout completed');
+    }
   };
+
+  const effectiveToken = pkceToken || reduxToken || inAppAuth.token;
+  const effectiveUser = pkceTokenData || reduxUser || inAppAuth.user;
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
-        {!token ? (
-          <LoginHero onLogin={logIn} />
+        {!effectiveToken ? (
+          <LoginHero 
+            onLoginSuccess={handleInAppLoginSuccess} 
+            onKeycloakSso={pkceLogIn} 
+          />
         ) : (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0B0F19' }}>
-            <Navbar user={tokenData} onLogout={handleLogout} />
+            <Navbar user={effectiveUser} onLogout={handleLogout} />
             <Box sx={{ flexGrow: 1 }}>
               <Routes>
                 <Route path="/activities" element={<Dashboard />} />
