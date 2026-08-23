@@ -75,12 +75,10 @@ function App() {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.clear();
     setInAppAuth({ token: null, user: null });
-    try {
-      pkceLogOut();
-    } catch (e) {
-      console.log('PKCE logout completed');
-    }
+    const keycloakLogoutUrl = `http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/logout?post_logout_redirect_uri=http://localhost:5173/&client_id=oauth2-pkce-client`;
+    window.location.href = keycloakLogoutUrl;
   };
 
   const effectiveToken = pkceToken || reduxToken || inAppAuth.token;
