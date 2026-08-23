@@ -233,7 +233,7 @@ const ActivityDetail = () => {
           <Grid container spacing={3}>
             {/* Suggested Improvements */}
             {recommendation.improvements && recommendation.improvements.length > 0 && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ height: '100%', border: '1px solid rgba(16, 185, 129, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#10B981', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -266,7 +266,7 @@ const ActivityDetail = () => {
 
             {/* Workout Suggestions */}
             {recommendation.suggestion && recommendation.suggestion.length > 0 && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ height: '100%', border: '1px solid rgba(6, 182, 212, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#06B6D4', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -299,7 +299,7 @@ const ActivityDetail = () => {
 
             {/* Safety Guidelines */}
             {recommendation.safety && recommendation.safety.length > 0 && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card sx={{ border: '1px solid rgba(245, 158, 11, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
                   <CardContent sx={{ p: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#F59E0B', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -307,7 +307,7 @@ const ActivityDetail = () => {
                     </Typography>
                     <Grid container spacing={1.5}>
                       {recommendation.safety.map((item, idx) => (
-                        <Grid item xs={12} sm={6} key={idx}>
+                        <Grid size={{ xs: 12, sm: 6 }} key={idx}>
                           <Box 
                             sx={{ 
                               p: 1.5, 

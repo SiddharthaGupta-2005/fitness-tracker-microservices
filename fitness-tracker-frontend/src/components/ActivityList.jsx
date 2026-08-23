@@ -198,7 +198,7 @@ const ActivityList = ({ activities = [], onActivityDeleted }) => {
             const calPerMin = activity.duration ? (calories / activity.duration).toFixed(1) : 0;
 
             return (
-              <Grid item xs={12} sm={6} md={4} key={activity.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -265,7 +265,7 @@ const ActivityList = ({ activities = [], onActivityDeleted }) => {
 
                     {/* Metrics Grid */}
                     <Grid container spacing={1.5} sx={{ my: 1 }}>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Box sx={{ p: 1.2, borderRadius: '10px', backgroundColor: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                           <Typography variant="caption" sx={{ color: '#9CA3AF', display: 'block' }}>
                             ⏱️ Duration
@@ -276,7 +276,7 @@ const ActivityList = ({ activities = [], onActivityDeleted }) => {
                         </Box>
                       </Grid>
 
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Box sx={{ p: 1.2, borderRadius: '10px', backgroundColor: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                           <Typography variant="caption" sx={{ color: '#9CA3AF', display: 'block' }}>
                             🔥 Calories

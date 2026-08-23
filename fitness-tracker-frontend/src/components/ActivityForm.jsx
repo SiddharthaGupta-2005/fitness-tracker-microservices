@@ -188,7 +188,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
         <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2.5}>
             {/* Activity Type Selection */}
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: '#9CA3AF' }}>Activity Type</InputLabel>
                 <Select
@@ -209,7 +209,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
             </Grid>
 
             {/* Duration */}
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Box>
                 <TextField
                   fullWidth
@@ -236,7 +236,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
             </Grid>
 
             {/* Calories Burned */}
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Box>
                 <TextField
                   fullWidth
@@ -262,7 +262,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
             </Grid>
 
             {/* Submit Button */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Button
                 type="submit"
                 variant="contained"

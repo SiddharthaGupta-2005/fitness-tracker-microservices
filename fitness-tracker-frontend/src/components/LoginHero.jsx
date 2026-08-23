@@ -141,7 +141,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
   };
 
   const features = [
-    { icon: '🤖', title: 'Gemini AI Coach', desc: 'Real-time workout evaluation & recovery guidance' },
+    { icon: '🤖', title: 'Groq AI Coach', desc: 'Real-time workout evaluation & recovery guidance' },
     { icon: '⚡', title: 'RabbitMQ Microservices', desc: 'Event-driven message routing & high throughput' },
     { icon: '🔒', title: 'OAuth2 & PKCE', desc: 'Enterprise security & reactive identity sync' },
     { icon: '📊', title: 'Polyglot DB Architecture', desc: 'MongoDB for activity streams & PostgreSQL for users' },
@@ -160,13 +160,13 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4} alignItems="center">
+        <Grid container spacing={4} sx={{ alignItems: 'center' }}>
           
           {/* Left Column: Hero Brand & Architecture Highlights */}
-          <Grid item xs={12} md={6.5}>
+          <Grid size={{ xs: 12, md: 6.5 }}>
             <Box sx={{ pr: { md: 4 } }}>
               <Chip 
-                label="⚡ Spring Cloud Microservices + Gemini AI" 
+                label="⚡ Spring Cloud Microservices + Groq AI" 
                 sx={{ 
                   backgroundColor: 'rgba(16, 185, 129, 0.15)', 
                   color: '#10B981', 
@@ -207,7 +207,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
               {/* 4 Feature Badges */}
               <Grid container spacing={2}>
                 {features.map((f, i) => (
-                  <Grid item xs={12} sm={6} key={i}>
+                  <Grid size={{ xs: 12, sm: 6 }} key={i}>
                     <Box 
                       sx={{ 
                         p: 2, 
@@ -242,7 +242,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
           </Grid>
 
           {/* Right Column: In-App Glassmorphic Login & Sign-Up Card */}
-          <Grid item xs={12} md={5.5}>
+          <Grid size={{ xs: 12, md: 5.5 }}>
             <Card 
               sx={{ 
                 background: 'rgba(17, 24, 39, 0.9)', 
@@ -382,18 +382,20 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder="••••••••"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton 
-                                onClick={() => setShowPassword(!showPassword)} 
-                                edge="end"
-                                sx={{ color: '#9CA3AF' }}
-                              >
-                                {showPassword ? '👁️' : '🔒'}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton 
+                                  onClick={() => setShowPassword(!showPassword)} 
+                                  edge="end"
+                                  sx={{ color: '#9CA3AF' }}
+                                >
+                                  {showPassword ? '👁️' : '🔒'}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
                         }}
                       />
 
@@ -430,7 +432,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   <Box component="form" onSubmit={handleSignUp}>
                     <Stack spacing={2}>
                       <Grid container spacing={1.5}>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <TextField
                             fullWidth
                             label="First Name"
@@ -440,7 +442,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                             placeholder="John"
                           />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <TextField
                             fullWidth
                             label="Last Name"
@@ -472,19 +474,21 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                         value={signUpData.password}
                         onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                         placeholder="••••••••"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton 
-                                onClick={() => setShowSignUpPassword(!showSignUpPassword)} 
-                                edge="end"
-                                size="small"
-                                sx={{ color: '#9CA3AF' }}
-                              >
-                                {showSignUpPassword ? '👁️' : '🔒'}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton 
+                                  onClick={() => setShowSignUpPassword(!showSignUpPassword)} 
+                                  edge="end"
+                                  size="small"
+                                  sx={{ color: '#9CA3AF' }}
+                                >
+                                  {showSignUpPassword ? '👁️' : '🔒'}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
                         }}
                       />
 

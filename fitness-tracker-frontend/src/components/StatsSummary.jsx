@@ -64,7 +64,7 @@ const StatsSummary = ({ activities = [] }) => {
   return (
     <Grid container spacing={2} sx={{ mb: 4 }}>
       {statCards.map((card, idx) => (
-        <Grid item xs={12} sm={6} md={3} key={idx}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
           <Card
             sx={{
               background: card.gradient,
