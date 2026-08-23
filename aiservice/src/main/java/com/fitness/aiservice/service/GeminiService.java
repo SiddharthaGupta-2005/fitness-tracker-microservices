@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -15,10 +16,10 @@ public class GeminiService {
 
     private final WebClient webClient;
 
-    @Value("${gemini.api.url:https://api.groq.com/openai/v1/chat/completions}")
+    @Value("${gemini.api.url:${groq.api.url:${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}}}")
     private String geminiApiUrl;
 
-    @Value("${gemini.api.key:}")
+    @Value("${groq.api.key:${gemini.api.key:${GROQ_API_KEY:${GEMINI_API_KEY:}}}}")
     private String geminiApiKey;
 
     public GeminiService(WebClient.Builder webClientBuilder){
@@ -26,10 +27,17 @@ public class GeminiService {
     }
 
     public String getAnswer(String question){
-        String cleanUrl = geminiApiUrl != null ? geminiApiUrl.trim() : "https://api.groq.com/openai/v1/chat/completions";
+        String cleanUrl = geminiApiUrl != null && !geminiApiUrl.isBlank() 
+                ? geminiApiUrl.trim() 
+                : "https://api.groq.com/openai/v1/chat/completions";
         String cleanKey = geminiApiKey != null ? geminiApiKey.trim() : "";
 
         boolean isGroqOrOpenAI = cleanUrl.contains("groq.com") || cleanUrl.contains("openai") || cleanUrl.contains("openrouter");
+
+        log.info("AI Provider: {}, URL: {}, Key Present: {}", 
+                isGroqOrOpenAI ? "Groq/OpenAI" : "Google Gemini", 
+                cleanUrl, 
+                !cleanKey.isEmpty());
 
         if (isGroqOrOpenAI) {
             // Groq / OpenAI Compatible Request
@@ -43,21 +51,26 @@ public class GeminiService {
                     "temperature", 0.3
             );
 
-            log.info("Sending request to Groq AI: {}", cleanUrl);
-
             return webClient.post()
                     .uri(cleanUrl)
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + cleanKey)
                     .bodyValue(requestBody)
                     .retrieve()
+                    .onStatus(status -> status.isError(), clientResponse ->
+                            clientResponse.bodyToMono(String.class)
+                                    .flatMap(errorBody -> {
+                                        log.error("Groq API Error Response [{}]: {}", clientResponse.statusCode(), errorBody);
+                                        return Mono.error(new RuntimeException("Groq API Error " + clientResponse.statusCode() + ": " + errorBody));
+                                    })
+                    )
                     .bodyToMono(String.class)
                     .retryWhen(reactor.util.retry.Retry.backoff(2, Duration.ofMillis(800))
                             .filter(throwable -> throwable != null && throwable.getMessage() != null &&
                                     (throwable.getMessage().contains("503") || throwable.getMessage().contains("429"))))
                     .block();
         } else {
-            // Legacy Google Gemini Request
+            // Google Gemini Request
             Map<String, Object> requestBody = Map.of(
                     "contents", new Object[]{
                             Map.of("parts", new Object[]{
@@ -66,13 +79,19 @@ public class GeminiService {
                     }
             );
             String fullUrl = cleanUrl + cleanKey;
-            log.info("Sending request to Google Gemini AI: {}", cleanUrl);
 
             return webClient.post()
                     .uri(fullUrl)
                     .header("Content-Type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
+                    .onStatus(status -> status.isError(), clientResponse ->
+                            clientResponse.bodyToMono(String.class)
+                                    .flatMap(errorBody -> {
+                                        log.error("Gemini API Error Response [{}]: {}", clientResponse.statusCode(), errorBody);
+                                        return Mono.error(new RuntimeException("Gemini API Error " + clientResponse.statusCode() + ": " + errorBody));
+                                    })
+                    )
                     .bodyToMono(String.class)
                     .retryWhen(reactor.util.retry.Retry.backoff(3, Duration.ofSeconds(1))
                             .jitter(0.5)
