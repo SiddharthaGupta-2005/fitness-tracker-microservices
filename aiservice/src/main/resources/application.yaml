@@ -1,3 +1,6 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: ai-service
@@ -5,3 +8,29 @@ spring:
     banner-mode: off
   config:
     import: optional:configserver:http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/fitnessrecommendation
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+rabbitmq:
+  exchange:
+    name: fitness.exchange
+  queue:
+    name: activity.queue
+  routing:
+    key: activity.tracking
+
+gemini:
+  api:
+    url: ${GEMINI_API_URL:${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}}
+    key: ${GROQ_API_KEY:${GEMINI_API_KEY:}}
