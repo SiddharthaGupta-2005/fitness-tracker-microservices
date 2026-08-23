@@ -81,4 +81,11 @@ public class ActivityService {
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new ActivityNotFoundException("Activity not found with id: " + activityId));
     }
+
+    public void deleteActivity(String activityId) {
+        if (!activityRepository.existsById(activityId)) {
+            throw new ActivityNotFoundException("Activity not found with id: " + activityId);
+        }
+        activityRepository.deleteById(activityId);
+    }
 }

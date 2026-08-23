@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
-import { getActivityDetail } from "../services/api";
+import { deleteActivity, getActivityDetail } from "../services/api";
 import { Typography, Card, CardContent, Box, Button, CircularProgress, Alert } from "@mui/material";
 
 const ActivityDetail = () => {
@@ -47,6 +47,17 @@ const ActivityDetail = () => {
         fetchActivityDetail();
     };
 
+    const handleDelete = async () => {
+        if (window.confirm("Are you sure you want to delete this activity?")) {
+            try {
+                await deleteActivity(id);
+                navigate('/activities');
+            } catch (error) {
+                console.error("Error deleting activity:", error);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -58,12 +69,17 @@ const ActivityDetail = () => {
 
     return (
         <Box sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Button variant="outlined" onClick={() => navigate('/activities')}>
-                    ← Back to Activities
-                </Button>
-                <Button variant="text" onClick={handleManualRefresh}>
-                    🔄 Refresh
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button variant="outlined" onClick={() => navigate('/activities')}>
+                        ← Back to Activities
+                    </Button>
+                    <Button variant="text" onClick={handleManualRefresh}>
+                        🔄 Refresh
+                    </Button>
+                </Box>
+                <Button variant="outlined" color="error" onClick={handleDelete}>
+                    Delete Activity
                 </Button>
             </Box>
             <Card>
