@@ -2,7 +2,7 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField } fro
 import { useState } from 'react';
 import { addActivity } from '../services/api';
 
-const ActivityForm = (onActivityAdded) => {
+const ActivityForm = ({ onActivitiesAdded }) => {
 
   const [activity, setActivity] = useState({
     type: "RUNNING",
@@ -14,12 +14,21 @@ const ActivityForm = (onActivityAdded) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addActivity(activity);
-      onActivityAdded();
-      setActivity({ type: "RUNNING", duration: "", caloriesBurned: "" });
+      const userId = localStorage.getItem('userId');
+      await addActivity({
+        ...activity,
+        userId: userId,
+        duration: Number(activity.duration),
+        caloriesBurned: Number(activity.caloriesBurned),
+        startTime: new Date().toISOString()
+      });
+      if (onActivitiesAdded) {
+        onActivitiesAdded();
+      }
+      setActivity({ type: "RUNNING", duration: "", caloriesBurned: "", additionalMetrics: {} });
 
     } catch (error) {
-      console.error("Error adding activities")
+      console.error("Error adding activities", error);
     }
 
   }
