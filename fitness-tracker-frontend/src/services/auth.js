@@ -44,3 +44,8 @@ export const loginWithCredentials = async (username, password) => {
     refreshToken: refresh_token,
   };
 };
+
+export const loginWithGoogle = () => {
+  const googleAuthUrl = `http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/auth?client_id=${CLIENT_ID}&response_type=code&scope=openid%20profile%20email&redirect_uri=http://localhost:5173/&kc_idp_hint=google`;
+  window.location.href = googleAuthUrl;
+};

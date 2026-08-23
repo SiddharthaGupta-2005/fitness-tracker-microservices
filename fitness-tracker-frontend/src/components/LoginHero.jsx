@@ -18,7 +18,29 @@ import {
   Divider,
   Stack
 } from '@mui/material';
-import { loginWithCredentials } from '../services/auth';
+import { loginWithCredentials, loginWithGoogle } from '../services/auth';
+import { registerUser } from '../services/api';
+
+const GoogleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: '10px' }}>
+    <path
+      fill="#4285F4"
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+    />
+  </svg>
+);
 
 const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
   const [tabIndex, setTabIndex] = useState(0); // 0: Sign In, 1: Sign Up
@@ -35,7 +57,9 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
     email: '',
     username: '',
     password: '',
+    confirmPassword: '',
   });
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -59,17 +83,61 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
       } else if (err.response && err.response.status === 401) {
         setErrorMsg('Invalid username or password. Please verify your credentials.');
       } else {
-        setErrorMsg('Unable to connect to Keycloak authentication server (Port 8181).');
+        setErrorMsg('Unable to connect to authentication server. Please check Keycloak service.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFillDemo = () => {
-    setLoginUsername('testuser');
-    setLoginPassword('Password123!');
+  const handleSignUp = async (e) => {
+    e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
+
+    if (signUpData.password !== signUpData.confirmPassword) {
+      setErrorMsg('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    if (signUpData.password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Register in User Microservice
+      await registerUser({
+        email: signUpData.email.trim(),
+        password: signUpData.password,
+        firstName: signUpData.firstName.trim(),
+        lastName: signUpData.lastName.trim(),
+      });
+
+      setSuccessMsg('Account created successfully! Signing you in...');
+      
+      // Automatically attempt login with new credentials
+      try {
+        const authResult = await loginWithCredentials(signUpData.email.trim() || signUpData.username.trim(), signUpData.password);
+        if (onLoginSuccess) {
+          onLoginSuccess(authResult);
+        }
+      } catch (loginErr) {
+        setSuccessMsg('Account registered! Please sign in with your credentials.');
+        setLoginUsername(signUpData.email.trim());
+        setTabIndex(0);
+      }
+    } catch (err) {
+      console.error('Sign up failed:', err);
+      if (err.response && err.response.data && err.response.data.message) {
+        setErrorMsg(err.response.data.message);
+      } else {
+        setErrorMsg('Registration encountered an issue. You can also sign in directly.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -95,7 +163,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
         <Grid container spacing={4} alignItems="center">
           
           {/* Left Column: Hero Brand & Architecture Highlights */}
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={6.5}>
             <Box sx={{ pr: { md: 4 } }}>
               <Chip 
                 label="⚡ Spring Cloud Microservices + Gemini AI" 
@@ -174,10 +242,10 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
           </Grid>
 
           {/* Right Column: In-App Glassmorphic Login & Sign-Up Card */}
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} md={5.5}>
             <Card 
               sx={{ 
-                background: 'rgba(17, 24, 39, 0.85)', 
+                background: 'rgba(17, 24, 39, 0.9)', 
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(16, 185, 129, 0.3)',
                 boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(16, 185, 129, 0.15)',
@@ -194,7 +262,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                   <Box 
                     sx={{ 
                       width: 36, 
@@ -210,7 +278,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                     ⚡
                   </Box>
                   <Typography variant="h5" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-                    FitPulse <span style={{ color: '#10B981' }}>Account</span>
+                    FitPulse <span style={{ color: '#10B981' }}>AI</span>
                   </Typography>
                 </Box>
                 <Typography variant="caption" sx={{ color: '#9CA3AF' }}>
@@ -219,14 +287,14 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
               </Box>
 
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-                {/* Tabs: Sign In / Quick Demo */}
+                {/* Tabs: Sign In / Create Account */}
                 <Tabs 
                   value={tabIndex} 
                   onChange={(e, val) => { setTabIndex(val); setErrorMsg(''); setSuccessMsg(''); }}
                   variant="fullWidth"
                   sx={{ 
                     mb: 3, 
-                    backgroundColor: 'rgba(0, 0, 0, 0.25)', 
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)', 
                     borderRadius: 2.5,
                     p: 0.5,
                     '& .MuiTabs-indicator': { display: 'none' },
@@ -258,6 +326,39 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   </Alert>
                 )}
 
+                {/* SIGN IN WITH GOOGLE BUTTON */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="large"
+                  onClick={loginWithGoogle}
+                  sx={{
+                    py: 1.4,
+                    mb: 2.5,
+                    backgroundColor: '#FFFFFF',
+                    color: '#374151',
+                    borderColor: '#E5E7EB',
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    textTransform: 'none',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    '&:hover': {
+                      backgroundColor: '#F3F4F6',
+                      borderColor: '#D1D5DB',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    }
+                  }}
+                >
+                  <GoogleIcon />
+                  {tabIndex === 0 ? 'Sign in with Google' : 'Sign up with Google'}
+                </Button>
+
+                <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                  <Typography variant="caption" sx={{ color: '#6B7280', px: 1, textTransform: 'uppercase', fontWeight: 600 }}>
+                    or continue with email
+                  </Typography>
+                </Divider>
+
                 {/* TAB 0: SIGN IN FORM */}
                 {tabIndex === 0 && (
                   <Box component="form" onSubmit={handleSignIn}>
@@ -269,8 +370,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                         required
                         value={loginUsername}
                         onChange={(e) => setLoginUsername(e.target.value)}
-                        placeholder="e.g. testuser"
-                        autoFocus
+                        placeholder="Enter your username or email"
                       />
 
                       <TextField
@@ -297,18 +397,6 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                         }}
                       />
 
-                      {/* Quick Auto-Fill Helper */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Button 
-                          size="small" 
-                          variant="text" 
-                          onClick={handleFillDemo}
-                          sx={{ fontSize: '0.8rem', color: '#10B981', p: 0 }}
-                        >
-                          ⚡ Auto-fill testuser
-                        </Button>
-                      </Box>
-
                       {/* Sign In Submit Button */}
                       <Button
                         type="submit"
@@ -327,7 +415,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                         {loading ? (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <CircularProgress size={20} color="inherit" />
-                            <span>Authenticating with Keycloak...</span>
+                            <span>Authenticating...</span>
                           </Box>
                         ) : (
                           <span>🚀 Sign In to Dashboard</span>
@@ -337,49 +425,108 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   </Box>
                 )}
 
-                {/* TAB 1: CREATE ACCOUNT / SIGN UP GUIDE */}
+                {/* TAB 1: CREATE ACCOUNT FORM */}
                 {tabIndex === 1 && (
-                  <Box sx={{ textAlign: 'center', py: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#F9FAFB', mb: 1 }}>
-                      Instant Self-Registration
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9CA3AF', mb: 3, lineHeight: 1.6 }}>
-                      Sign up through the Keycloak Identity Provider or use the default test credentials:
-                    </Typography>
+                  <Box component="form" onSubmit={handleSignUp}>
+                    <Stack spacing={2}>
+                      <Grid container spacing={1.5}>
+                        <Grid item xs={6}>
+                          <TextField
+                            fullWidth
+                            label="First Name"
+                            size="small"
+                            value={signUpData.firstName}
+                            onChange={(e) => setSignUpData({ ...signUpData, firstName: e.target.value })}
+                            placeholder="John"
+                          />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <TextField
+                            fullWidth
+                            label="Last Name"
+                            size="small"
+                            value={signUpData.lastName}
+                            onChange={(e) => setSignUpData({ ...signUpData, lastName: e.target.value })}
+                            placeholder="Doe"
+                          />
+                        </Grid>
+                      </Grid>
 
-                    <Card sx={{ p: 2.5, mb: 3, backgroundColor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', textAlign: 'left' }}>
-                      <Typography variant="subtitle2" sx={{ color: '#10B981', fontWeight: 700, mb: 1 }}>
-                        🔑 Instant Test User:
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#E5E7EB', fontFamily: 'monospace' }}>
-                        Username: <strong>testuser</strong>
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#E5E7EB', fontFamily: 'monospace', mt: 0.5 }}>
-                        Password: <strong>Password123!</strong>
-                      </Typography>
-                    </Card>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        type="email"
+                        required
+                        size="small"
+                        value={signUpData.email}
+                        onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                        placeholder="john.doe@example.com"
+                      />
 
-                    <Button 
-                      variant="contained" 
-                      fullWidth
-                      onClick={() => { setTabIndex(0); handleFillDemo(); }}
-                      sx={{ mb: 2 }}
-                    >
-                      Use Demo Account
-                    </Button>
+                      <TextField
+                        fullWidth
+                        label="Password (min. 6 characters)"
+                        type={showSignUpPassword ? 'text' : 'password'}
+                        required
+                        size="small"
+                        value={signUpData.password}
+                        onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                        placeholder="••••••••"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton 
+                                onClick={() => setShowSignUpPassword(!showSignUpPassword)} 
+                                edge="end"
+                                size="small"
+                                sx={{ color: '#9CA3AF' }}
+                              >
+                                {showSignUpPassword ? '👁️' : '🔒'}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
 
-                    <Button 
-                      variant="outlined" 
-                      fullWidth
-                      onClick={onKeycloakSso}
-                      sx={{ borderColor: 'rgba(255, 255, 255, 0.15)', color: '#9CA3AF' }}
-                    >
-                      Open Keycloak Registration Portal
-                    </Button>
+                      <TextField
+                        fullWidth
+                        label="Confirm Password"
+                        type={showSignUpPassword ? 'text' : 'password'}
+                        required
+                        size="small"
+                        value={signUpData.confirmPassword}
+                        onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
+                        placeholder="••••••••"
+                      />
+
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        disabled={loading}
+                        sx={{
+                          py: 1.4,
+                          fontSize: '0.95rem',
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                          boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+                        }}
+                      >
+                        {loading ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <CircularProgress size={20} color="inherit" />
+                            <span>Creating Account...</span>
+                          </Box>
+                        ) : (
+                          <span>⚡ Create Account & Sign In</span>
+                        )}
+                      </Button>
+                    </Stack>
                   </Box>
                 )}
 
-                <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+                <Divider sx={{ my: 2.5, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
                 {/* Secondary Option */}
                 <Button 
@@ -389,7 +536,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso }) => {
                   onClick={onKeycloakSso}
                   sx={{ color: '#9CA3AF', fontSize: '0.8rem' }}
                 >
-                  🔐 Or Authenticate via Keycloak SSO Redirect
+                  🔐 Or Authenticate via Keycloak SSO Portal
                 </Button>
               </CardContent>
             </Card>
