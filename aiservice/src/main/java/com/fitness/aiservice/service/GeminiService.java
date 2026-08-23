@@ -37,6 +37,9 @@ public class GeminiService {
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
+                .retryWhen(reactor.util.retry.Retry.backoff(3, java.time.Duration.ofMillis(1000))
+                        .filter(throwable -> throwable.getMessage() != null && 
+                                (throwable.getMessage().contains("503") || throwable.getMessage().contains("429"))))
                 .block();
 
         return response;
