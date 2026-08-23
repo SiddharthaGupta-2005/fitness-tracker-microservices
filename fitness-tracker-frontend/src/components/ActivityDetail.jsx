@@ -47,7 +47,7 @@ const ActivityDetail = () => {
                             <Typography variant="body1" sx={{ mt: 2 }}>
                                 {recommendation.recommendation}
                             </Typography>
-                            {recommendation.improvements && (
+                            {recommendation.improvements && recommendation.improvements.length > 0 && (
                                 <Box sx={{ mt: 2 }}>
                                     <Typography variant="h6">Suggested Improvements:</Typography>
                                     {Array.isArray(recommendation.improvements) ? (
@@ -59,15 +59,27 @@ const ActivityDetail = () => {
                                     )}
                                 </Box>
                             )}
-                            {recommendation.safetySuggestions && (
+                            {recommendation.suggestion && recommendation.suggestion.length > 0 && (
                                 <Box sx={{ mt: 2 }}>
-                                    <Typography variant="h6">Safety Tips:</Typography>
-                                    {Array.isArray(recommendation.safetySuggestions) ? (
-                                        recommendation.safetySuggestions.map((item, idx) => (
+                                    <Typography variant="h6">Workout Suggestions:</Typography>
+                                    {Array.isArray(recommendation.suggestion) ? (
+                                        recommendation.suggestion.map((item, idx) => (
                                             <Typography key={idx} variant="body2">• {item}</Typography>
                                         ))
                                     ) : (
-                                        <Typography variant="body2">{recommendation.safetySuggestions}</Typography>
+                                        <Typography variant="body2">{recommendation.suggestion}</Typography>
+                                    )}
+                                </Box>
+                            )}
+                            {recommendation.safety && recommendation.safety.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Typography variant="h6">Safety Tips:</Typography>
+                                    {Array.isArray(recommendation.safety) ? (
+                                        recommendation.safety.map((item, idx) => (
+                                            <Typography key={idx} variant="body2">• {item}</Typography>
+                                        ))
+                                    ) : (
+                                        <Typography variant="body2">{recommendation.safety}</Typography>
                                     )}
                                 </Box>
                             )}
