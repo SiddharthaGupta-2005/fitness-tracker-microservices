@@ -34,12 +34,23 @@ const ActivityForm = ({ onActivitiesAdded }) => {
   }
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
-      <FormControl>
+      <FormControl fullWidth margin="normal">
         <InputLabel>Activity Type</InputLabel>
-        <Select value={activity.type} onChange={(e) => setActivity({ ...activity, type: e.target.value })}>
-          <MenuItem value="RUNNING">Running</MenuItem>
-          <MenuItem value="WALKING">Walking</MenuItem>
-          <MenuItem value="SWIMMING">Swimming</MenuItem>
+        <Select 
+          value={activity.type} 
+          label="Activity Type"
+          onChange={(e) => setActivity({ ...activity, type: e.target.value })}
+        >
+          <MenuItem value="RUNNING">🏃‍♂️ Running</MenuItem>
+          <MenuItem value="WALKING">🚶 Walking</MenuItem>
+          <MenuItem value="STRENGTH_TRAINING">🏋️ Strength Training</MenuItem>
+          <MenuItem value="POWER_LIFTING">🏋️‍♂️ Power Lifting</MenuItem>
+          <MenuItem value="SWIMMING">🏊 Swimming</MenuItem>
+          <MenuItem value="CYCLING">🚴 Cycling</MenuItem>
+          <MenuItem value="CARDIO">❤️ Cardio</MenuItem>
+          <MenuItem value="YOGA">🧘 Yoga</MenuItem>
+          <MenuItem value="PILATES">🤸 Pilates</MenuItem>
+          <MenuItem value="OTHER">⚡ Other</MenuItem>
         </Select>
       </FormControl>
       <TextField fullWidth
