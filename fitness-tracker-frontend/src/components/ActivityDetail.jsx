@@ -15,7 +15,11 @@ const ActivityDetail = () => {
                 const response = await getActivityDetail(id);
                 setRecommendation(response.data);
             } catch (error) {
-                console.error("Error fetching recommendation", error);
+                if (error.response && error.response.status === 404) {
+                    setRecommendation(null);
+                } else {
+                    console.error("Error fetching recommendation", error);
+                }
             } finally {
                 setLoading(false);
             }

@@ -23,6 +23,8 @@ public class RecommendationController {
 
     @GetMapping("/activity/{activityId}")
     public ResponseEntity<Recommendation> getActivityRecommendation(@PathVariable String activityId){
-        return ResponseEntity.ok(recommendationService.getActivityRecommendation(activityId));
+        return recommendationService.getActivityRecommendation(activityId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
