@@ -1,55 +1,90 @@
-import { BrowserRouter as Router, Navigate, Routes, Route, useLocation } from 'react-router';
-import { Box, Button } from '@mui/material';
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router';
+import { Box, Container, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthContext } from 'react-oauth2-code-pkce';
 import { useDispatch } from 'react-redux';
-import { setCredentials } from './store/authSlice';
+import { setCredentials, logout } from './store/authSlice';
+import { darkTheme } from './theme';
+
+import Navbar from './components/Navbar';
+import StatsSummary from './components/StatsSummary';
 import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import ActivityDetail from './components/ActivityDetail';
+import LoginHero from './components/LoginHero';
+import { getActivities } from './services/api';
 
-const ActivitiesPage = () => {
-  return (<Box component="section" sx={{ p: 2, border: '1px dashed grey' }}>
-    <ActivityForm onActivitiesAdded={() => window.location.reload()} />
-    <ActivityList />
-  </Box>);
-}
+const Dashboard = () => {
+  const [activities, setActivities] = useState([]);
+
+  const fetchActivities = async () => {
+    try {
+      const response = await getActivities();
+      setActivities(response.data || []);
+    } catch (error) {
+      console.error('Error fetching activities on dashboard:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const handleActivityDeleted = (deletedId) => {
+    setActivities(prev => prev.filter(act => act.id !== deletedId));
+  };
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* 4 Stats Summary Cards */}
+      <StatsSummary activities={activities} />
+
+      {/* Log Workout Form */}
+      <ActivityForm onActivitiesAdded={fetchActivities} />
+
+      {/* Activities Grid & Filters */}
+      <ActivityList activities={activities} onActivityDeleted={handleActivityDeleted} />
+    </Container>
+  );
+};
 
 function App() {
-  const { token, tokenData, logIn, logOut, isAuthenticated } = useContext(AuthContext);
+  const { token, tokenData, logIn, logOut } = useContext(AuthContext);
   const dispatch = useDispatch();
-  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     if (token) {
       dispatch(setCredentials({ token, user: tokenData }));
-      setAuthReady(true);
     }
-  }, [token, tokenData, dispatch])
-  return (
-    <Router>
-      {!token ? (
-        <Button variant="contained" color="#dc004e"
-          onClick={() => {
-            logIn();
-          }}>Login</Button>
-      ) : (
-        // <div>
-        //   <pre>{JSON.stringify(tokenData, null, 2)}</pre>
-        //   <pre>{JSON.stringify(token, null, 2)}</pre>
-        // </div>
-        <Box component="section" sx={{ p: 2, border: '1px dashed grey' }}>
-          <Button variant="contained" color='secondry' onClick={logOut} sx={{ mb: 2 }}>Logout</Button>
-          <Routes>
-            <Route path='/activities' element={<ActivitiesPage />} />
-            <Route path='/activities/:id' element={<ActivityDetail />} />
+  }, [token, tokenData, dispatch]);
 
-            <Route path='/' element={token ? <Navigate to="/activities" replace /> : <div>Welcome! Please Login</div>} />
-          </Routes>
-        </Box>
-      )}
-    </Router>
-  )
+  const handleLogout = () => {
+    dispatch(logout());
+    logOut();
+  };
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Router>
+        {!token ? (
+          <LoginHero onLogin={logIn} />
+        ) : (
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0B0F19' }}>
+            <Navbar user={tokenData} onLogout={handleLogout} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Routes>
+                <Route path="/activities" element={<Dashboard />} />
+                <Route path="/activities/:id" element={<ActivityDetail />} />
+                <Route path="/" element={<Navigate to="/activities" replace />} />
+                <Route path="*" element={<Navigate to="/activities" replace />} />
+              </Routes>
+            </Box>
+          </Box>
+        )}
+      </Router>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
