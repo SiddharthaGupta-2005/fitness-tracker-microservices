@@ -22,6 +22,22 @@ public class UserService {
         if(repository.existsByEmail(request.getEmail()))
         {
             User existingUser = repository.findByEmail(request.getEmail());
+            boolean updated = false;
+            if (request.getKeycloakId() != null && !request.getKeycloakId().equals(existingUser.getKeycloakId())) {
+                existingUser.setKeycloakId(request.getKeycloakId());
+                updated = true;
+            }
+            if (request.getFirstName() != null && (existingUser.getFirstName() == null || !request.getFirstName().equals(existingUser.getFirstName()))) {
+                existingUser.setFirstName(request.getFirstName());
+                updated = true;
+            }
+            if (request.getLastName() != null && (existingUser.getLastName() == null || !request.getLastName().equals(existingUser.getLastName()))) {
+                existingUser.setLastName(request.getLastName());
+                updated = true;
+            }
+            if (updated) {
+                existingUser = repository.save(existingUser);
+            }
             UserResponse userResponse = new UserResponse();
             userResponse.setId(existingUser.getId());
             userResponse.setKeycloakId(existingUser.getKeycloakId());
@@ -37,9 +53,9 @@ public class UserService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
+        user.setKeycloakId(request.getKeycloakId());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-
 
         User savedUser = repository.save(user);
         UserResponse userResponse = new UserResponse();
@@ -56,10 +72,12 @@ public class UserService {
 
     public UserResponse getUserProfile(String userId) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .or(() -> repository.findByKeycloakId(userId))
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
+        userResponse.setKeycloakId(user.getKeycloakId());
         userResponse.setPassword(user.getPassword());
         userResponse.setEmail(user.getEmail());
         userResponse.setFirstName(user.getFirstName());
@@ -72,6 +90,6 @@ public class UserService {
 
     public Boolean existByUserId(String userId) {
         log.info("Calling User Validation API for userId: {}", userId);
-        return repository.existsByKeycloakId(userId);
+        return repository.existsByKeycloakId(userId) || repository.existsById(userId);
     }
 }

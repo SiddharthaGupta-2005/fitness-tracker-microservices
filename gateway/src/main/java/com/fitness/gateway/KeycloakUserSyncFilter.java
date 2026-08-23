@@ -4,7 +4,6 @@ import com.fitness.gateway.user.RegisterRequest;
 import com.fitness.gateway.user.UserService;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -22,14 +21,22 @@ public class KeycloakUserSyncFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String userId = exchange.getRequest().getHeaders().getFirst("X-User");
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+        String userId = exchange.getRequest().getHeaders().getFirst("X-User-ID");
+        if (userId == null) {
+            userId = exchange.getRequest().getHeaders().getFirst("X-User");
+        }
+        RegisterRequest registerRequest = getUserDetails(token);
 
+        if (userId == null && registerRequest != null) {
+            userId = registerRequest.getKeycloakId();
+        }
         if (userId != null && token != null) {
+            String finalUserId = userId;
             return userService.validateUser(userId)
                     .flatMap(exist -> {
                         if (!exist) {
-                            RegisterRequest registerRequest = getUserDetails(token);
+
                             if (registerRequest != null) {
                                 return userService.registerUser(registerRequest)
                                         .then(Mono.empty());
@@ -43,7 +50,7 @@ public class KeycloakUserSyncFilter implements WebFilter {
                     })
                     .then(Mono.defer(() -> {
                         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                                .header("X-User-ID", userId)
+                                .header("X-User-ID", finalUserId)
                                 .build();
                         return chain.filter(exchange.mutate().request(mutatedRequest).build());
                     }));
@@ -52,11 +59,13 @@ public class KeycloakUserSyncFilter implements WebFilter {
     }
 
     private RegisterRequest getUserDetails(String token) {
+        if (token == null) {
+            return null;
+        }
         try {
             String tokenWithoutBearer = token.replace("Bearer", "").trim();
             SignedJWT signedJWT = SignedJWT.parse(tokenWithoutBearer);
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-
 
             RegisterRequest registerRequest = new RegisterRequest();
             registerRequest.setEmail(claims.getStringClaim("email"));
@@ -66,7 +75,7 @@ public class KeycloakUserSyncFilter implements WebFilter {
             registerRequest.setLastName(claims.getStringClaim("family_name"));
             return registerRequest;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Could not extract user details from JWT token: {}", e.getMessage());
             return null;
         }
     }

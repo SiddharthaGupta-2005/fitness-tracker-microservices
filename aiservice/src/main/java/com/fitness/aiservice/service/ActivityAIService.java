@@ -22,11 +22,16 @@ public class ActivityAIService {
     private final GeminiService geminiService;
 
     public Recommendation generateRecommendation(Activity activity){
-        String prompt = createPromptForActivity(activity);
-        String aiResponse = geminiService.getAnswer(prompt);
-        log.info("RESPONSE FROM AI:{} ", aiResponse);
+        try {
+            String prompt = createPromptForActivity(activity);
+            String aiResponse = geminiService.getAnswer(prompt);
+            log.info("RESPONSE FROM AI:{} ", aiResponse);
 
-        return processAiResponse(activity,aiResponse);
+            return processAiResponse(activity,aiResponse);
+        } catch (Exception e) {
+            log.error("Failed to get recommendation from Gemini AI, falling back to default recommendation: {}", e.getMessage());
+            return createDefaultRecommendation(activity);
+        }
     }
 
     private Recommendation processAiResponse(Activity activity, String aiResponse){
@@ -34,31 +39,42 @@ public class ActivityAIService {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(aiResponse);
 
-            JsonNode textNode = rootNode.path("candidates")
-                    .get(0)
-                    .path("content")
-                    .path("part")
-                    .get(0)
-                    .path("text");
+            JsonNode candidates = rootNode.path("candidates");
+            if (candidates.isMissingNode() || !candidates.isArray() || candidates.isEmpty()) {
+                log.warn("No candidates found in AI response: {}", aiResponse);
+                return createDefaultRecommendation(activity);
+            }
 
-            String jsonContent = textNode.asText()
-                    .replaceAll("```json\\n","")
-                    .replaceAll("\\n```","")
-                    .trim();
-//            log.info("PARSED RESPONSE FROM AI: {}", jsonContent);
+            JsonNode parts = candidates.get(0).path("content").path("parts");
+            if (parts.isMissingNode() || !parts.isArray() || parts.isEmpty()) {
+                log.warn("No content parts found in AI response candidate");
+                return createDefaultRecommendation(activity);
+            }
+
+            JsonNode textNode = parts.get(0).path("text");
+            String rawText = textNode.asText().trim();
+
+            String jsonContent = rawText;
+            if (jsonContent.startsWith("```json")) {
+                jsonContent = jsonContent.substring(7);
+            } else if (jsonContent.startsWith("```")) {
+                jsonContent = jsonContent.substring(3);
+            }
+            if (jsonContent.endsWith("```")) {
+                jsonContent = jsonContent.substring(0, jsonContent.length() - 3);
+            }
+            jsonContent = jsonContent.trim();
 
             JsonNode analysisJson = mapper.readTree(jsonContent);
             JsonNode analysisNode = analysisJson.path("analysis");
             StringBuilder fullAnalysis = new StringBuilder();
-            addAnalysisSection(fullAnalysis,analysisNode,"overall","Overall");
-            addAnalysisSection(fullAnalysis,analysisNode,"pace","Pace");
-            addAnalysisSection(fullAnalysis,analysisNode,"heartRate","Heart Rate");
-            addAnalysisSection(fullAnalysis,analysisNode,"caloriesBurned","Calories");
+            addAnalysisSection(fullAnalysis,analysisNode,"overall","Overall: ");
+            addAnalysisSection(fullAnalysis,analysisNode,"pace","Pace: ");
+            addAnalysisSection(fullAnalysis,analysisNode,"heartRate","Heart Rate: ");
+            addAnalysisSection(fullAnalysis,analysisNode,"caloriesBurned","Calories: ");
 
             List<String> improvements = extractImprovements(analysisJson.path("improvements"));
-
             List<String> suggestions = extractSuggestions(analysisJson.path("suggestions"));
-
             List<String> safety = extractSafetyGuidelines(analysisJson.path("safety"));
 
             return Recommendation.builder()
@@ -73,7 +89,7 @@ public class ActivityAIService {
                     .build();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error processing AI response: {}", e.getMessage(), e);
             return createDefaultRecommendation(activity);
         }
     }
@@ -121,7 +137,7 @@ public class ActivityAIService {
                 suggestions;
     }
 
-    private List extractImprovements(JsonNode improvementsNode) {
+    private List<String> extractImprovements(JsonNode improvementsNode) {
         List<String> improvements = new ArrayList<>();
         if (improvementsNode.isArray()) {
             improvementsNode.forEach(improvement -> {
@@ -138,7 +154,7 @@ public class ActivityAIService {
     }
 
     private void addAnalysisSection(StringBuilder fullAnalysis, JsonNode analysisNode, String key, String prefix) {
-        if(!analysisNode.path(key).isMissingNode()){
+        if(!analysisNode.path(key).isMissingNode() && !analysisNode.path(key).isNull()){
             fullAnalysis.append(prefix)
                     .append(analysisNode.path(key).asText())
                     .append("\n\n");

@@ -1,4 +1,5 @@
 package com.fitness.acitvityservices.service;
+
 import com.fitness.acitvityservices.exception.ActivityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,32 +30,32 @@ public class ActivityService {
     @Value("${rabbitmq.routing.key}")
     private String routingKey;
 
-    public ActivityResponse trackActivity(ActivityRequest request){
+    public ActivityResponse trackActivity(ActivityRequest request) {
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
-    if (!isValidUser){
-        throw new RuntimeException("Invalid user: " + request.getUserId());
-    }
-    Activity activity = Activity.builder()
-            .userId(request.getUserId())
-            .type(request.getType())
-            .duration(request.getDuration())
-            .caloriesBurned(request.getCaloriesBurned())
-            .startTime(request.getStartTime())
-            .additionalMetrics(request.getAdditionalMetrics())
-                    .build();
+        if (!isValidUser) {
+            throw new RuntimeException("Invalid user: " + request.getUserId());
+        }
+        Activity activity = Activity.builder()
+                .userId(request.getUserId())
+                .type(request.getType())
+                .duration(request.getDuration())
+                .caloriesBurned(request.getCaloriesBurned())
+                .startTime(request.getStartTime())
+                .additionalMetrics(request.getAdditionalMetrics())
+                .build();
 
-    Activity savedActivity = activityRepository.save(activity);
+        Activity savedActivity = activityRepository.save(activity);
 
-    //Publish to RabbitMQ for AI processing
-        try{
-            rabbitTemplate.convertAndSend(exchange,routingKey,savedActivity);
-        } catch (Exception e){
+        // Publish to RabbitMQ for AI processing
+        try {
+            rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
+        } catch (Exception e) {
             log.error("Failed to publish activity to RabbitMQ: ", e);
         }
-    return mapToResponse(savedActivity);
+        return mapToResponse(savedActivity);
     }
-    private  ActivityResponse mapToResponse(Activity activity)
-    {
+
+    private ActivityResponse mapToResponse(Activity activity) {
         ActivityResponse response = new ActivityResponse();
         response.setId(activity.getId());
         response.setUserId(activity.getUserId());
@@ -70,7 +71,7 @@ public class ActivityService {
 
     public List<ActivityResponse> getUserActivities(String userId) {
         List<Activity> activities = activityRepository.findByUserId(userId);
-        return  activities.stream()
+        return activities.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
