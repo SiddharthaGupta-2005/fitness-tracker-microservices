@@ -27,5 +27,5 @@ rabbitmq:
 
 gemini:
   api:
-    url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=}
-    key: ${GEMINI_API_KEY}
+    url: ${GEMINI_API_URL:${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}}
+    key: ${GROQ_API_KEY:${GEMINI_API_KEY}}

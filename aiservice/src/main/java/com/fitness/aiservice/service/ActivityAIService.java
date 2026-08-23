@@ -39,20 +39,32 @@ public class ActivityAIService {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(aiResponse);
 
-            JsonNode candidates = rootNode.path("candidates");
-            if (candidates.isMissingNode() || !candidates.isArray() || candidates.isEmpty()) {
-                log.warn("No candidates found in AI response: {}", aiResponse);
-                return createDefaultRecommendation(activity);
+            String rawText = null;
+
+            // 1. Check Groq / OpenAI format
+            JsonNode choices = rootNode.path("choices");
+            if (!choices.isMissingNode() && choices.isArray() && !choices.isEmpty()) {
+                JsonNode messageContent = choices.get(0).path("message").path("content");
+                if (!messageContent.isMissingNode()) {
+                    rawText = messageContent.asText().trim();
+                }
             }
 
-            JsonNode parts = candidates.get(0).path("content").path("parts");
-            if (parts.isMissingNode() || !parts.isArray() || parts.isEmpty()) {
-                log.warn("No content parts found in AI response candidate");
-                return createDefaultRecommendation(activity);
+            // 2. Check Google Gemini format
+            if (rawText == null) {
+                JsonNode candidates = rootNode.path("candidates");
+                if (!candidates.isMissingNode() && candidates.isArray() && !candidates.isEmpty()) {
+                    JsonNode parts = candidates.get(0).path("content").path("parts");
+                    if (!parts.isMissingNode() && parts.isArray() && !parts.isEmpty()) {
+                        rawText = parts.get(0).path("text").asText().trim();
+                    }
+                }
             }
 
-            JsonNode textNode = parts.get(0).path("text");
-            String rawText = textNode.asText().trim();
+            if (rawText == null || rawText.isEmpty()) {
+                log.warn("No text content could be extracted from AI response: {}", aiResponse);
+                return createDefaultRecommendation(activity);
+            }
 
             String jsonContent = rawText;
             if (jsonContent.startsWith("```json")) {
