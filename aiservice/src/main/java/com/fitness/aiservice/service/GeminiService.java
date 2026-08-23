@@ -37,9 +37,13 @@ public class GeminiService {
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
-                .retryWhen(reactor.util.retry.Retry.backoff(2, java.time.Duration.ofMillis(500))
-                        .filter(throwable -> throwable.getMessage() != null && 
-                                (throwable.getMessage().contains("503") || throwable.getMessage().contains("429"))))
+                .retryWhen(reactor.util.retry.Retry.backoff(3, java.time.Duration.ofSeconds(1))
+                        .jitter(0.5)
+                        .filter(throwable -> throwable != null && throwable.getMessage() != null && 
+                                (throwable.getMessage().contains("503") || 
+                                 throwable.getMessage().contains("429") || 
+                                 throwable.getMessage().contains("ServerWebInputException") ||
+                                 throwable.getMessage().contains("Connection"))))
                 .block();
 
         return response;
