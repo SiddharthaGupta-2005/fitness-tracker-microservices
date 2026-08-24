@@ -12,7 +12,7 @@ import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import ActivityDetail from './components/ActivityDetail';
 import LoginHero from './components/LoginHero';
-import { getActivities } from './services/api';
+import { getActivities, registerUser } from './services/api';
 
 const Dashboard = () => {
   const [activities, setActivities] = useState([]);
@@ -60,11 +60,24 @@ function App() {
     user: JSON.parse(localStorage.getItem('user') || 'null'),
   });
 
-  // Sync PKCE token if authenticated via Keycloak redirect
+  // Sync PKCE token and auto-persist Google user profile into PostgreSQL fitness_user_db
   useEffect(() => {
     if (pkceToken) {
       dispatch(setCredentials({ token: pkceToken, user: pkceTokenData }));
       setInAppAuth({ token: pkceToken, user: pkceTokenData });
+
+      if (pkceTokenData && pkceTokenData.sub) {
+        const syncUserData = {
+          keycloakId: pkceTokenData.sub,
+          email: pkceTokenData.email || `${pkceTokenData.sub}@google.user`,
+          firstName: pkceTokenData.given_name || pkceTokenData.name || 'Google',
+          lastName: pkceTokenData.family_name || 'User',
+          password: 'OAUTH2_GOOGLE_MANAGED'
+        };
+        registerUser(syncUserData).catch(err => {
+          console.warn('Google user auto-sync status:', err.message);
+        });
+      }
     }
   }, [pkceToken, pkceTokenData, dispatch]);
 
