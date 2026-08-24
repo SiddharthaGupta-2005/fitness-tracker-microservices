@@ -7,9 +7,9 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-tiny-paper-b3u8aifr-pooler.c-4.ap-southeast-1.aws.neon.tech/fitness_user_db?sslmode=require}
-    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
-    password: ${SPRING_DATASOURCE_PASSWORD:npg_woyLl1uk9WFg}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/fitness_user_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -21,4 +21,4 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
