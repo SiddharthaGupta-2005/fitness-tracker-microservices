@@ -1,13 +1,18 @@
 server:
   port: 8083
+
 spring:
+  application:
+    name: ai-service
+
   data:
     mongodb:
-      uri: mongodb://localhost:27017/fitnessrecommendation
+      uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessrecommendation?retryWrites=true&w=majority&appName=fitness-cluster
       database: fitnessrecommendation
   mongodb:
-    uri: mongodb://localhost:27017/fitnessrecommendation
+    uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessrecommendation?retryWrites=true&w=majority&appName=fitness-cluster
     database: fitnessrecommendation
+
   rabbitmq:
     host: localhost
     port: 5672

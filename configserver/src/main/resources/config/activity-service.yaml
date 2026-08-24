@@ -4,10 +4,10 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/fitnessactivity
+      uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessactivity?retryWrites=true&w=majority&appName=fitness-cluster
       database: fitnessactivity
   mongodb:
-    uri: mongodb://localhost:27017/fitnessactivity
+    uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessactivity?retryWrites=true&w=majority&appName=fitness-cluster
     database: fitnessactivity
 
   rabbitmq:
