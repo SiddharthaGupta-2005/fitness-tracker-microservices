@@ -87,12 +87,18 @@ const ActivityForm = ({ onActivitiesAdded }) => {
 
     try {
       const userId = localStorage.getItem('userId') || 'athlete-user';
+      // Format as clean ISO local date-time string YYYY-MM-DDTHH:mm:ss
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const formattedStartTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
       await addActivity({
-        ...activity,
         userId: userId,
+        type: activity.type,
         duration: Number(activity.duration),
         caloriesBurned: Number(activity.caloriesBurned),
-        startTime: new Date().toISOString()
+        startTime: formattedStartTime,
+        additionalMetrics: {}
       });
 
       setSuccessMsg(`WORKOUT LOGGED! OPENROUTER AI IS PROCESSING YOUR ${activity.type} SESSION.`);
