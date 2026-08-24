@@ -1,0 +1,234 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------
+  # INFRASTRUCTURE: PostgreSQL
+  # ----------------------------------------------------
+  postgres:
+    image: postgres:17-alpine
+    container_name: fitness-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fitness_user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fitness_user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # INFRASTRUCTURE: MongoDB
+  # ----------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: fitness-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # INFRASTRUCTURE: RabbitMQ
+  # ----------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: fitness-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: Eureka Service Discovery
+  # ----------------------------------------------------
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: fitness-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: Spring Cloud Config Server
+  # ----------------------------------------------------
+  configserver:
+    build:
+      context: ./configserver
+      dockerfile: Dockerfile
+    container_name: fitness-configserver
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      SERVER_PORT: 8888
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+    depends_on:
+      - eureka
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: User Microservice
+  # ----------------------------------------------------
+  userservices:
+    build:
+      context: ./userservices
+      dockerfile: Dockerfile
+    container_name: fitness-userservice
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fitness_user_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: Activity Microservice
+  # ----------------------------------------------------
+  acitvityservices:
+    build:
+      context: ./acitvityservices
+      dockerfile: Dockerfile
+    container_name: fitness-activityservice
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fitnessactivity
+      SPRING_DATA_MONGODB_DATABASE: fitnessactivity
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/fitnessactivity
+      SPRING_MONGODB_DATABASE: fitnessactivity
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: AI Coaching Microservice (OpenRouter Engine)
+  # ----------------------------------------------------
+  aiservice:
+    build:
+      context: ./aiservice
+      dockerfile: Dockerfile
+    container_name: fitness-aiservice
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fitnessrecommendation
+      SPRING_DATA_MONGODB_DATABASE: fitnessrecommendation
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/fitnessrecommendation
+      SPRING_MONGODB_DATABASE: fitnessrecommendation
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openrouter/free}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: API Gateway
+  # ----------------------------------------------------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: fitness-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+    depends_on:
+      - eureka
+      - configserver
+    networks:
+      - fitness-network
+
+  # ----------------------------------------------------
+  # SERVICE: React Kinetic Dark Frontend (Nginx)
+  # ----------------------------------------------------
+  frontend:
+    build:
+      context: ./fitness-tracker-frontend
+      dockerfile: Dockerfile
+    container_name: fitness-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+      - "80:80"
+    depends_on:
+      - gateway
+    networks:
+      - fitness-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  fitness-network:
+    driver: bridge
