@@ -2,32 +2,32 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Box, Button, Avatar, Chip, Container } from '@mui/material';
 import { useNavigate } from 'react-router';
 
-const Navbar = ({ user, onLogout, onOpenLogModal }) => {
+const Navbar = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
   const getInitials = () => {
-    if (!user) return 'U';
+    if (!user) return 'A';
     if (user.given_name) return user.given_name.charAt(0).toUpperCase();
     if (user.preferred_username) return user.preferred_username.charAt(0).toUpperCase();
-    return 'U';
+    return 'A';
   };
 
   const getDisplayName = () => {
-    if (!user) return 'Athlete';
-    if (user.given_name && user.family_name) return `${user.given_name} ${user.family_name}`;
-    if (user.given_name) return user.given_name;
-    if (user.preferred_username) return user.preferred_username;
-    return 'Athlete';
+    if (!user) return 'ATHLETE';
+    if (user.given_name && user.family_name) return `${user.given_name} ${user.family_name}`.toUpperCase();
+    if (user.given_name) return user.given_name.toUpperCase();
+    if (user.preferred_username) return user.preferred_username.toUpperCase();
+    return 'ATHLETE';
   };
 
   return (
     <AppBar 
       position="sticky" 
       sx={{ 
-        background: 'rgba(11, 15, 25, 0.85)', 
+        background: 'rgba(12, 12, 15, 0.9)', 
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+        boxShadow: '0 4px 25px rgba(0, 0, 0, 0.6)',
       }}
     >
       <Container maxWidth="lg">
@@ -45,45 +45,49 @@ const Navbar = ({ user, onLogout, onOpenLogModal }) => {
           >
             <Box 
               sx={{ 
-                width: 42, 
-                height: 42, 
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)',
+                width: 38, 
+                height: 38, 
+                borderRadius: '8px',
+                backgroundColor: '#b4ff00',
+                color: '#0c0c0f',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '22px',
-                boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
+                fontSize: '20px',
+                fontWeight: 900,
+                boxShadow: '0 0 20px rgba(180, 255, 0, 0.35)',
               }}
             >
               ⚡
             </Box>
             <Box>
               <Typography 
-                variant="h6" 
+                variant="h5" 
                 sx={{ 
-                  fontWeight: 800, 
-                  lineHeight: 1.1,
-                  background: 'linear-gradient(90deg, #FFFFFF 0%, #E5E7EB 50%, #10B981 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 900, 
+                  letterSpacing: '0.04em',
+                  lineHeight: 1,
+                  color: '#f4f4f7'
                 }}
               >
-                FitPulse <span style={{ color: '#10B981', WebkitTextFillColor: '#10B981' }}>AI</span>
+                FITPULSE <span style={{ color: '#b4ff00' }}>AI</span>
               </Typography>
-              <Chip 
-                label="Microservices Hub" 
-                size="small" 
-                sx={{ 
-                  height: 18, 
-                  fontSize: '0.65rem', 
-                  fontWeight: 700, 
-                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                  color: '#10B981',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  mt: 0.3
-                }} 
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.3 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#b4ff00', display: 'inline-block', boxShadow: '0 0 8px #b4ff00' }}></span>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: '0.65rem', 
+                    fontWeight: 700, 
+                    color: '#8888a0',
+                    letterSpacing: '0.05em'
+                  }}
+                >
+                  LIVE TELEMETRY
+                </Typography>
+              </Box>
             </Box>
           </Box>
 
@@ -95,31 +99,53 @@ const Navbar = ({ user, onLogout, onOpenLogModal }) => {
                 display: { xs: 'none', sm: 'flex' }, 
                 alignItems: 'center', 
                 gap: 1.2,
-                px: 1.5,
-                py: 0.75,
-                borderRadius: '30px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
+                px: 1.8,
+                py: 0.6,
+                borderRadius: '8px',
+                backgroundColor: '#13131a',
+                border: '1px solid rgba(255, 255, 255, 0.07)'
               }}
             >
               <Avatar 
                 sx={{ 
-                  width: 32, 
-                  height: 32, 
-                  bgcolor: '#10B981', 
-                  fontWeight: 700,
-                  fontSize: '0.85rem'
+                  width: 28, 
+                  height: 28, 
+                  bgcolor: '#b4ff00', 
+                  color: '#0c0c0f',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  fontFamily: '"JetBrains Mono", monospace'
                 }}
               >
                 {getInitials()}
               </Avatar>
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#F9FAFB', lineHeight: 1.1 }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 800, 
+                    color: '#f4f4f7', 
+                    fontSize: '0.85rem',
+                    letterSpacing: '0.04em',
+                    lineHeight: 1.1,
+                    display: 'block'
+                  }}
+                >
                   {getDisplayName()}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#10B981', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10B981' }}></span>
-                  Authenticated
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontFamily: '"JetBrains Mono", monospace',
+                    color: '#b4ff00', 
+                    fontSize: '0.65rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 0.5 
+                  }}
+                >
+                  OAUTH2 VERIFIED
                 </Typography>
               </Box>
             </Box>
@@ -127,19 +153,25 @@ const Navbar = ({ user, onLogout, onOpenLogModal }) => {
             {/* Logout Button */}
             <Button 
               variant="outlined" 
-              color="error" 
               size="small"
               onClick={onLogout}
               sx={{ 
-                borderColor: 'rgba(239, 68, 68, 0.4)', 
-                color: '#F87171',
+                borderColor: 'rgba(255, 77, 0, 0.3)', 
+                color: '#ff4d00',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                letterSpacing: '0.04em',
+                px: 2,
+                py: 0.6,
                 '&:hover': {
-                  borderColor: '#EF4444',
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)'
+                  borderColor: '#ff4d00',
+                  backgroundColor: 'rgba(255, 77, 0, 0.1)',
+                  boxShadow: '0 0 15px rgba(255, 77, 0, 0.2)'
                 }
               }}
             >
-              🚪 Sign Out
+              SIGN OUT
             </Button>
           </Box>
         </Toolbar>

@@ -36,10 +36,10 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* 4 Stats Summary Cards */}
+      {/* 4 Kinetic Stats Summary Cards */}
       <StatsSummary activities={activities} />
 
-      {/* Log Workout Form */}
+      {/* Athletic Log Workout Form */}
       <ActivityForm onActivitiesAdded={fetchActivities} />
 
       {/* Activities Grid & Filters */}
@@ -49,7 +49,7 @@ const Dashboard = () => {
 };
 
 function App() {
-  const { token: pkceToken, tokenData: pkceTokenData, logIn: pkceLogIn, logOut: pkceLogOut } = useContext(AuthContext);
+  const { token: pkceToken, tokenData: pkceTokenData, logIn: pkceLogIn } = useContext(AuthContext);
   const dispatch = useDispatch();
   
   const reduxToken = useSelector((state) => state.auth?.token);
@@ -67,11 +67,6 @@ function App() {
       setInAppAuth({ token: pkceToken, user: pkceTokenData });
     }
   }, [pkceToken, pkceTokenData, dispatch]);
-
-  const handleInAppLoginSuccess = (authResult) => {
-    dispatch(setCredentials(authResult));
-    setInAppAuth({ token: authResult.token, user: authResult.user });
-  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -97,13 +92,9 @@ function App() {
       <CssBaseline />
       <Router>
         {!effectiveToken ? (
-          <LoginHero 
-            onLoginSuccess={handleInAppLoginSuccess} 
-            onKeycloakSso={pkceLogIn}
-            onGoogleLogin={handleGoogleLogin} 
-          />
+          <LoginHero onGoogleLogin={handleGoogleLogin} />
         ) : (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0B0F19' }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0c0c0f' }}>
             <Navbar user={effectiveUser} onLogout={handleLogout} />
             <Box sx={{ flexGrow: 1 }}>
               <Routes>

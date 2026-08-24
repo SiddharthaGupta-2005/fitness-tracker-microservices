@@ -15,7 +15,7 @@ import {
 import { loginWithGoogle } from '../services/auth';
 
 const GoogleIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" style={{ marginRight: '12px' }}>
+  <svg width="22" height="22" viewBox="0 0 24 24" style={{ marginRight: '12px' }}>
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -48,10 +48,10 @@ const LoginHero = ({ onGoogleLogin }) => {
   };
 
   const features = [
-    { icon: '🤖', title: 'OpenRouter AI Coach', desc: 'Real-time workout evaluation & recovery guidance' },
-    { icon: '⚡', title: 'RabbitMQ Microservices', desc: 'Event-driven message routing & high throughput' },
-    { icon: '🔒', title: 'OAuth2 & PKCE', desc: 'Enterprise security & reactive identity sync' },
-    { icon: '📊', title: 'Polyglot DB Architecture', desc: 'MongoDB for activity streams & PostgreSQL for users' },
+    { icon: '🤖', title: 'OPENROUTER AI COACH', desc: 'Real-time workout evaluation & recovery guidance', color: '#b4ff00' },
+    { icon: '⚡', title: 'EVENT-DRIVEN STREAM', desc: 'RabbitMQ asynchronous high-throughput pipeline', color: '#00d4ff' },
+    { icon: '🔒', title: 'OAUTH2 PKCE SECURITY', desc: 'Zero-password cryptographic auth with Keycloak', color: '#a855f7' },
+    { icon: '📊', title: 'POLYGLOT ARCHITECTURE', desc: 'MongoDB time-series streams + PostgreSQL state', color: '#ff4d00' },
   ];
 
   return (
@@ -61,88 +61,100 @@ const LoginHero = ({ onGoogleLogin }) => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'radial-gradient(ellipse at 50% 0%, #111827 0%, #0B0F19 80%)',
-        py: { xs: 4, md: 8 },
-        px: { xs: 2, sm: 4 }
+        backgroundColor: '#0c0c0f',
+        backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(180, 255, 0, 0.05) 0%, rgba(12, 12, 15, 0.95) 75%)',
+        py: { xs: 5, md: 8 },
+        px: { xs: 2.5, sm: 4 }
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={5} sx={{ alignItems: 'center' }}>
+        <Grid container spacing={6} sx={{ alignItems: 'center' }}>
           
-          {/* Left Column: Hero Brand & Architecture Highlights */}
+          {/* Left Column: Hero Athletic Branding */}
           <Grid size={{ xs: 12, md: 6.5 }}>
             <Box sx={{ pr: { md: 4 } }}>
               <Chip 
-                label="⚡ Spring Cloud Microservices + OpenRouter AI" 
+                label="⚡ KINETIC PERFORMANCE DASHBOARD" 
                 sx={{ 
-                  backgroundColor: 'rgba(16, 185, 129, 0.15)', 
-                  color: '#10B981', 
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  backgroundColor: 'rgba(180, 255, 0, 0.12)', 
+                  color: '#b4ff00', 
+                  border: '1px solid rgba(180, 255, 0, 0.3)',
+                  fontFamily: '"JetBrains Mono", monospace',
                   fontWeight: 700,
-                  mb: 2.5
+                  fontSize: '0.75rem',
+                  mb: 3,
+                  px: 0.5
                 }} 
               />
               
               <Typography 
-                variant="h2" 
+                variant="h1" 
                 sx={{ 
-                  fontWeight: 900, 
-                  letterSpacing: '-0.03em',
-                  lineHeight: 1.15,
+                  fontSize: { xs: '2.8rem', sm: '3.8rem', md: '4.4rem' },
+                  lineHeight: 0.95,
                   mb: 2.5,
-                  color: '#F9FAFB'
+                  color: '#f4f4f7'
                 }}
               >
-                Track Workouts. <br />
+                TRACK HARD. <br />
                 <span style={{ 
-                  background: 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)', 
-                  WebkitBackgroundClip: 'text', 
-                  WebkitTextFillColor: 'transparent' 
+                  color: '#b4ff00',
+                  textShadow: '0 0 35px rgba(180, 255, 0, 0.3)'
                 }}>
-                  Supercharge with AI.
+                  COACH WITH AI.
                 </span>
               </Typography>
 
               <Typography 
                 variant="body1" 
                 sx={{ 
-                  color: '#9CA3AF', 
+                  color: '#8888a0', 
                   lineHeight: 1.7, 
-                  mb: 4, 
+                  mb: 4.5, 
                   fontSize: '1.05rem',
-                  maxWidth: 560
+                  maxWidth: 540
                 }}
               >
-                Log your fitness routines, monitor calories, and receive personalized AI coaching insights generated in real time through an event-driven microservices architecture.
+                High-performance fitness logging with real-time biometric metrics, instant calorie computation, and deep telemetry analysis powered by OpenRouter neural models.
               </Typography>
 
-              {/* 4 Feature Badges */}
+              {/* 4 Kinetic Feature Badges */}
               <Grid container spacing={2}>
                 {features.map((f, i) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={i}>
                     <Box 
                       sx={{ 
-                        p: 2, 
-                        borderRadius: 3, 
-                        backgroundColor: 'rgba(17, 24, 39, 0.6)', 
-                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        p: 2.2, 
+                        borderRadius: '10px', 
+                        backgroundColor: '#13131a', 
+                        border: '1px solid rgba(255, 255, 255, 0.07)',
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: 1.5,
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          borderColor: 'rgba(16, 185, 129, 0.3)',
-                          backgroundColor: 'rgba(17, 24, 39, 0.85)',
-                          transform: 'translateY(-2px)'
+                          borderColor: f.color,
+                          backgroundColor: '#1a1a24',
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 8px 25px ${f.color}15`
                         }
                       }}
                     >
-                      <Box sx={{ fontSize: '1.6rem' }}>{f.icon}</Box>
+                      <Box sx={{ fontSize: '1.5rem', lineHeight: 1 }}>{f.icon}</Box>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#F9FAFB' }}>
+                        <Typography 
+                          variant="subtitle2" 
+                          sx={{ 
+                            fontFamily: '"Barlow Condensed", sans-serif',
+                            fontWeight: 800, 
+                            color: '#f4f4f7',
+                            fontSize: '0.95rem',
+                            letterSpacing: '0.03em'
+                          }}
+                        >
                           {f.title}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#9CA3AF', lineHeight: 1.4, display: 'block' }}>
+                        <Typography variant="caption" sx={{ color: '#8888a0', lineHeight: 1.4, display: 'block', mt: 0.3 }}>
                           {f.desc}
                         </Typography>
                       </Box>
@@ -153,64 +165,74 @@ const LoginHero = ({ onGoogleLogin }) => {
             </Box>
           </Grid>
 
-          {/* Right Column: Google-Only Sign-In Card */}
+          {/* Right Column: High-Impact Google Auth Card */}
           <Grid size={{ xs: 12, md: 5.5 }}>
             <Card 
               sx={{ 
-                background: 'rgba(17, 24, 39, 0.92)', 
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(16, 185, 129, 0.15)',
-                borderRadius: 4,
+                backgroundColor: '#13131a', 
+                border: '1px solid rgba(255, 255, 255, 0.09)',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(180, 255, 0, 0.08)',
+                borderRadius: '16px',
                 overflow: 'hidden'
               }}
             >
-              {/* Card Header with Glowing Gradient */}
-              <Box 
-                sx={{ 
-                  p: 3.5, 
-                  pb: 3,
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.05) 100%)',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                  textAlign: 'center'
-                }}
-              >
+              {/* Card Top Accent Strip */}
+              <Box sx={{ height: 4, background: 'linear-gradient(90deg, #b4ff00 0%, #00d4ff 50%, #ff4d00 100%)' }} />
+
+              <Box sx={{ p: 4, textAlign: 'center', pb: 2 }}>
                 <Box 
                   sx={{ 
-                    width: 48, 
-                    height: 48, 
-                    borderRadius: 2.5, 
-                    background: 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)',
+                    width: 52, 
+                    height: 52, 
+                    borderRadius: '12px', 
+                    backgroundColor: '#b4ff00',
+                    color: '#0c0c0f',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px',
+                    fontSize: '26px',
+                    fontWeight: 900,
                     mx: 'auto',
-                    mb: 1.5,
-                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                    mb: 2,
+                    boxShadow: '0 0 25px rgba(180, 255, 0, 0.4)'
                   }}
                 >
                   ⚡
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-                  FitPulse <span style={{ color: '#10B981' }}>AI</span>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 900, 
+                    color: '#f4f4f7',
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  ATHLETE ACCESS PORTAL
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#9CA3AF', mt: 0.5 }}>
-                  Next-Gen Fitness Tracking & AI Coaching
+                <Typography variant="body2" sx={{ color: '#8888a0', mt: 0.5 }}>
+                  Secure identity authorization via Keycloak OAuth2
                 </Typography>
               </Box>
 
-              <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-                <Box sx={{ textAlign: 'center', mb: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#F9FAFB', mb: 1 }}>
-                    Welcome to Your Dashboard
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
-                    Sign in or create an account instantly with your Google account to get started.
-                  </Typography>
-                </Box>
+              <CardContent sx={{ p: 4, pt: 1 }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontFamily: '"JetBrains Mono", monospace',
+                    color: '#8888a0', 
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    display: 'block',
+                    textAlign: 'center',
+                    mb: 2
+                  }}
+                >
+                  AUTHENTICATE WITH GOOGLE
+                </Typography>
 
-                {/* Prominent Google Sign-In Button */}
+                {/* Primary Google Sign-In Action */}
                 <Button
                   fullWidth
                   variant="outlined"
@@ -219,59 +241,59 @@ const LoginHero = ({ onGoogleLogin }) => {
                   disabled={loading}
                   sx={{
                     py: 1.8,
-                    mb: 3,
                     backgroundColor: '#FFFFFF',
-                    color: '#1F2937',
-                    borderColor: '#E5E7EB',
+                    color: '#0c0c0f',
+                    borderColor: '#FFFFFF',
+                    fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 800,
-                    fontSize: '1.05rem',
-                    textTransform: 'none',
-                    borderRadius: 3,
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                    fontSize: '1.2rem',
+                    letterSpacing: '0.04em',
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 20px rgba(255, 255, 255, 0.15)',
                     transition: 'all 0.2s',
                     '&:hover': {
-                      backgroundColor: '#F9FAFB',
-                      borderColor: '#D1D5DB',
-                      boxShadow: '0 6px 20px rgba(255,255,255,0.15)',
-                      transform: 'translateY(-1px)'
+                      backgroundColor: '#f4f4f7',
+                      borderColor: '#FFFFFF',
+                      boxShadow: '0 6px 30px rgba(180, 255, 0, 0.3)',
+                      transform: 'translateY(-2px)'
                     }
                   }}
                 >
                   {loading ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <CircularProgress size={22} color="inherit" />
-                      <span>Connecting to Google...</span>
+                      <CircularProgress size={22} sx={{ color: '#0c0c0f' }} />
+                      <span>CONNECTING TO GOOGLE...</span>
                     </Box>
                   ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <GoogleIcon />
-                      <span>Continue with Google</span>
+                      <span>CONTINUE WITH GOOGLE</span>
                     </Box>
                   )}
                 </Button>
 
-                <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+                <Divider sx={{ my: 3.5, borderColor: 'rgba(255, 255, 255, 0.07)' }} />
 
-                {/* Features & Security List */}
-                <Stack spacing={1.5}>
+                {/* Kinetic Security Attributes */}
+                <Stack spacing={1.8}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ color: '#10B981', fontWeight: 800, fontSize: '1rem' }}>✓</Box>
-                    <Typography variant="caption" sx={{ color: '#D1D5DB', fontSize: '0.85rem' }}>
-                      <strong>1-Click Instant Access:</strong> No passwords to remember or reset
+                    <Box sx={{ color: '#b4ff00', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace' }}>[✓]</Box>
+                    <Typography variant="body2" sx={{ color: '#f4f4f7', fontSize: '0.88rem' }}>
+                      <strong>Instant 1-Click Access:</strong> Zero password management
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ color: '#06B6D4', fontWeight: 800, fontSize: '1rem' }}>✓</Box>
-                    <Typography variant="caption" sx={{ color: '#D1D5DB', fontSize: '0.85rem' }}>
-                      <strong>Enterprise Security:</strong> Protected by OAuth2 with PKCE protocol
+                    <Box sx={{ color: '#00d4ff', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace' }}>[✓]</Box>
+                    <Typography variant="body2" sx={{ color: '#f4f4f7', fontSize: '0.88rem' }}>
+                      <strong>Cryptographic PKCE:</strong> Enterprise token rotation & TLS 1.3
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ color: '#8B5CF6', fontWeight: 800, fontSize: '1rem' }}>✓</Box>
-                    <Typography variant="caption" sx={{ color: '#D1D5DB', fontSize: '0.85rem' }}>
-                      <strong>Real-Time AI Sync:</strong> Instant workout analysis on login
+                    <Box sx={{ color: '#ff4d00', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace' }}>[✓]</Box>
+                    <Typography variant="body2" sx={{ color: '#f4f4f7', fontSize: '0.88rem' }}>
+                      <strong>Neural Engine:</strong> Instant OpenRouter AI coach synchronization
                     </Typography>
                   </Box>
                 </Stack>

@@ -19,24 +19,24 @@ import {
 import { addActivity } from '../services/api';
 
 const ACTIVITY_CONFIG = {
-  RUNNING: { label: 'Running', emoji: '🏃‍♂️', defaultCalPerMin: 11, color: '#10B981' },
-  WALKING: { label: 'Walking', emoji: '🚶', defaultCalPerMin: 4.5, color: '#06B6D4' },
-  STRENGTH_TRAINING: { label: 'Strength Training', emoji: '🏋️', defaultCalPerMin: 8, color: '#8B5CF6' },
-  POWER_LIFTING: { label: 'Power Lifting', emoji: '🏋️‍♂️', defaultCalPerMin: 9, color: '#EC4899' },
-  SWIMMING: { label: 'Swimming', emoji: '🏊', defaultCalPerMin: 10, color: '#3B82F6' },
-  CYCLING: { label: 'Cycling', emoji: '🚴', defaultCalPerMin: 9.5, color: '#F59E0B' },
-  CARDIO: { label: 'Cardio', emoji: '❤️', defaultCalPerMin: 10, color: '#EF4444' },
-  YOGA: { label: 'Yoga', emoji: '🧘', defaultCalPerMin: 5, color: '#14B8A6' },
-  PILATES: { label: 'Pilates', emoji: '🤸', defaultCalPerMin: 6, color: '#A855F7' },
-  OTHER: { label: 'Other', emoji: '⚡', defaultCalPerMin: 7, color: '#6B7280' },
+  RUNNING: { label: 'RUNNING', emoji: '🏃‍♂️', defaultCalPerMin: 11, color: '#b4ff00', intensity: 'HIGH' },
+  WALKING: { label: 'WALKING', emoji: '🚶‍♂️', defaultCalPerMin: 4.5, color: '#00d4ff', intensity: 'LOW' },
+  STRENGTH_TRAINING: { label: 'STRENGTH TRAINING', emoji: '🏋️‍♂️', defaultCalPerMin: 8, color: '#ff4d00', intensity: 'HIGH' },
+  POWER_LIFTING: { label: 'POWERLIFTING', emoji: '🦾', defaultCalPerMin: 9, color: '#ff4d00', intensity: 'HIGH' },
+  SWIMMING: { label: 'SWIMMING', emoji: '🏊‍♂️', defaultCalPerMin: 10, color: '#00d4ff', intensity: 'MED' },
+  CYCLING: { label: 'CYCLING', emoji: '🚴‍♂️', defaultCalPerMin: 9.5, color: '#b4ff00', intensity: 'MED' },
+  CARDIO: { label: 'CARDIO HIIT', emoji: '⚡', defaultCalPerMin: 10, color: '#ff4d00', intensity: 'HIGH' },
+  YOGA: { label: 'YOGA FLOW', emoji: '🧘‍♀️', defaultCalPerMin: 5, color: '#a855f7', intensity: 'LOW' },
+  PILATES: { label: 'PILATES', emoji: '🤸‍♀️', defaultCalPerMin: 6, color: '#a855f7', intensity: 'LOW' },
+  OTHER: { label: 'GENERAL WORKOUT', emoji: '🔥', defaultCalPerMin: 7, color: '#fbbf24', intensity: 'MED' },
 };
 
 const PRESETS = [
-  { type: 'RUNNING', duration: 30, calories: 330, label: '🏃‍♂️ 30m Run' },
-  { type: 'STRENGTH_TRAINING', duration: 45, calories: 360, label: '🏋️ 45m Gym' },
-  { type: 'CYCLING', duration: 40, calories: 380, label: '🚴 40m Ride' },
-  { type: 'SWIMMING', duration: 30, calories: 300, label: '🏊 30m Swim' },
-  { type: 'YOGA', duration: 25, calories: 125, label: '🧘 25m Yoga' },
+  { type: 'RUNNING', duration: 30, calories: 330, label: '🏃‍♂️ 30M RUN' },
+  { type: 'STRENGTH_TRAINING', duration: 45, calories: 360, label: '🏋️ 45M GYM' },
+  { type: 'CYCLING', duration: 40, calories: 380, label: '🚴 40M RIDE' },
+  { type: 'CARDIO', duration: 25, calories: 250, label: '⚡ 25M HIIT' },
+  { type: 'SWIMMING', duration: 30, calories: 300, label: '🏊 30M SWIM' },
 ];
 
 const ActivityForm = ({ onActivitiesAdded }) => {
@@ -95,7 +95,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
         startTime: new Date().toISOString()
       });
 
-      setSuccessMsg(`Workout logged! AI Coach is now analyzing your ${ACTIVITY_CONFIG[activity.type]?.label || 'workout'} session.`);
+      setSuccessMsg(`WORKOUT LOGGED! OPENROUTER AI IS PROCESSING YOUR ${activity.type} SESSION.`);
       setActivity({ type: 'RUNNING', duration: '', caloriesBurned: '', additionalMetrics: {} });
       
       if (onActivitiesAdded) {
@@ -106,7 +106,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
     } catch (error) {
       console.error('Error adding activity:', error);
       const serverMsg = error.response?.data?.message || error.response?.data?.error;
-      setErrorMsg(serverMsg ? `Error: ${serverMsg}` : 'Failed to log activity. Please check that Activity Service is running.');
+      setErrorMsg(serverMsg ? `ERROR: ${serverMsg}` : 'FAILED TO LOG ACTIVITY. PLEASE CHECK ACTIVITY SERVICE.');
     } finally {
       setLoading(false);
     }
@@ -118,173 +118,313 @@ const ActivityForm = ({ onActivitiesAdded }) => {
     <Card 
       sx={{ 
         mb: 4, 
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        background: 'rgba(17, 24, 39, 0.85)',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
+        backgroundColor: '#13131a', 
+        border: '1px solid rgba(255, 255, 255, 0.07)',
+        borderRadius: '14px',
+        overflow: 'hidden'
       }}
     >
-      <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      {/* Header Bar */}
+      <Box 
+        sx={{ 
+          px: 3.5, 
+          py: 2.5, 
+          background: 'linear-gradient(90deg, rgba(180, 255, 0, 0.08) 0%, rgba(19, 19, 26, 0.95) 100%)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: 1.5
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box 
+            sx={{ 
+              width: 32, 
+              height: 32, 
+              borderRadius: '6px', 
+              backgroundColor: '#b4ff00', 
+              color: '#0c0c0f',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              fontWeight: 900,
+              fontSize: '16px' 
+            }}
+          >
+            +
+          </Box>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-              Track New Activity
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 800, 
+                color: '#f4f4f7',
+                letterSpacing: '0.04em',
+                lineHeight: 1
+              }}
+            >
+              LOG NEW WORKOUT TELEMETRY
             </Typography>
-            <Typography variant="body2" sx={{ color: '#9CA3AF', mt: 0.2 }}>
-              Log your workout metrics to receive AI coaching and recovery insights.
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontFamily: '"JetBrains Mono", monospace',
+                color: '#8888a0', 
+                fontSize: '0.7rem' 
+              }}
+            >
+              REAL-TIME EVENT STREAM PUBLISHING
             </Typography>
           </Box>
-          <Chip 
-            label={currentConfig.label} 
-            sx={{ 
-              backgroundColor: `${currentConfig.color}20`,
-              color: currentConfig.color,
-              border: `1px solid ${currentConfig.color}50`,
-              fontWeight: 700,
-              fontSize: '0.85rem'
-            }} 
-          />
         </Box>
 
         {/* Quick Presets */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="caption" sx={{ color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            ⚡ Quick 1-Click Presets:
-          </Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }}>
-            {PRESETS.map((preset, idx) => (
-              <Chip
-                key={idx}
-                label={preset.label}
-                clickable
-                onClick={() => handlePresetSelect(preset)}
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#E5E7EB',
-                  fontWeight: 600,
-                  transition: 'all 0.15s ease',
-                  '&:hover': {
-                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                    borderColor: '#10B981',
-                    color: '#10B981'
-                  }
-                }}
-              />
-            ))}
-          </Stack>
-        </Box>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.8 }}>
+          {PRESETS.map((p, i) => (
+            <Chip 
+              key={i}
+              label={p.label}
+              size="small"
+              onClick={() => handlePresetSelect(p)}
+              sx={{ 
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                color: '#f4f4f7',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'rgba(180, 255, 0, 0.15)',
+                  borderColor: '#b4ff00',
+                  color: '#b4ff00'
+                }
+              }}
+            />
+          ))}
+        </Stack>
+      </Box>
 
-        {successMsg && (
-          <Alert severity="success" sx={{ mb: 2.5, backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34D399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-            🎉 {successMsg}
-          </Alert>
-        )}
-
+      <CardContent sx={{ p: 3.5 }}>
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2.5, backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#F87171', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3, 
+              backgroundColor: 'rgba(255, 77, 0, 0.12)', 
+              color: '#ff4d00', 
+              border: '1px solid rgba(255, 77, 0, 0.3)',
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.85rem'
+            }}
+          >
             {errorMsg}
           </Alert>
         )}
 
+        {successMsg && (
+          <Alert 
+            severity="success" 
+            sx={{ 
+              mb: 3, 
+              backgroundColor: 'rgba(180, 255, 0, 0.12)', 
+              color: '#b4ff00', 
+              border: '1px solid rgba(180, 255, 0, 0.3)',
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.85rem'
+            }}
+          >
+            {successMsg}
+          </Alert>
+        )}
+
         <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={2.5}>
-            {/* Activity Type Selection */}
-            <Grid size={{ xs: 12, sm: 4 }}>
+          <Grid container spacing={3}>
+            {/* Activity Type Dropdown */}
+            <Grid size={{ xs: 12, md: 4 }}>
               <FormControl fullWidth>
-                <InputLabel sx={{ color: '#9CA3AF' }}>Activity Type</InputLabel>
+                <InputLabel 
+                  id="activity-type-label"
+                  sx={{ 
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  ACTIVITY TYPE
+                </InputLabel>
                 <Select
+                  labelId="activity-type-label"
                   value={activity.type}
-                  label="Activity Type"
+                  label="ACTIVITY TYPE"
                   onChange={(e) => setActivity({ ...activity, type: e.target.value })}
+                  sx={{ 
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontWeight: 600
+                  }}
                 >
                   {Object.entries(ACTIVITY_CONFIG).map(([key, config]) => (
-                    <MenuItem key={key} value={key}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <span style={{ fontSize: '1.2rem' }}>{config.emoji}</span>
-                        <span>{config.label}</span>
-                      </Box>
+                    <MenuItem 
+                      key={key} 
+                      value={key}
+                      sx={{ 
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontSize: '0.9rem',
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <span>{config.emoji} {config.label}</span>
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            {/* Duration */}
-            <Grid size={{ xs: 12, sm: 4 }}>
+            {/* Duration Input & Quick Increment Buttons */}
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box>
                 <TextField
                   fullWidth
-                  label="Duration (minutes)"
+                  label="DURATION (MINUTES)"
                   type="number"
                   required
-                  placeholder="e.g. 45"
                   value={activity.duration}
                   onChange={(e) => setActivity({ ...activity, duration: e.target.value })}
-                  inputProps={{ min: 1, max: 1000 }}
+                  onBlur={handleEstimateCalories}
+                  placeholder="e.g. 45"
+                  slotProps={{
+                    input: {
+                      sx: { 
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontWeight: 700
+                      }
+                    },
+                    inputLabel: {
+                      sx: { 
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em'
+                      }
+                    }
+                  }}
                 />
-                <Stack direction="row" spacing={0.8} sx={{ mt: 0.8 }}>
-                  <Button size="small" variant="text" sx={{ fontSize: '0.75rem', py: 0.2, px: 1, minWidth: 0, color: '#9CA3AF' }} onClick={() => handleAddDuration(15)}>
-                    +15m
-                  </Button>
-                  <Button size="small" variant="text" sx={{ fontSize: '0.75rem', py: 0.2, px: 1, minWidth: 0, color: '#9CA3AF' }} onClick={() => handleAddDuration(30)}>
-                    +30m
-                  </Button>
-                  <Button size="small" variant="text" sx={{ fontSize: '0.75rem', py: 0.2, px: 1, minWidth: 0, color: '#9CA3AF' }} onClick={() => handleAddDuration(45)}>
-                    +45m
-                  </Button>
-                </Stack>
-              </Box>
-            </Grid>
-
-            {/* Calories Burned */}
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Box>
-                <TextField
-                  fullWidth
-                  label="Calories Burned (kcal)"
-                  type="number"
-                  required
-                  placeholder="e.g. 350"
-                  value={activity.caloriesBurned}
-                  onChange={(e) => setActivity({ ...activity, caloriesBurned: e.target.value })}
-                  inputProps={{ min: 1 }}
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.8 }}>
-                  <Button 
-                    size="small" 
-                    variant="text" 
-                    sx={{ fontSize: '0.75rem', py: 0.2, color: '#06B6D4' }}
-                    onClick={handleEstimateCalories}
-                  >
-                    ✨ Auto-Estimate Calories
-                  </Button>
+                
+                {/* Quick Add Minutes */}
+                <Box sx={{ display: 'flex', gap: 0.8, mt: 1 }}>
+                  {[+5, +15, +30, +45].map((mins) => (
+                    <Button
+                      key={mins}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleAddDuration(mins)}
+                      sx={{
+                        py: 0.2,
+                        px: 1,
+                        minWidth: 'auto',
+                        fontSize: '0.7rem',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        borderColor: 'rgba(255, 255, 255, 0.08)',
+                        color: '#8888a0',
+                        '&:hover': {
+                          borderColor: '#b4ff00',
+                          color: '#b4ff00',
+                          backgroundColor: 'rgba(180, 255, 0, 0.08)'
+                        }
+                      }}
+                    >
+                      {mins > 0 ? `+${mins}M` : `${mins}M`}
+                    </Button>
+                  ))}
                 </Box>
               </Box>
             </Grid>
 
-            {/* Submit Button */}
+            {/* Calories Burned Input */}
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box>
+                <TextField
+                  fullWidth
+                  label="ESTIMATED CALORIES (KCAL)"
+                  type="number"
+                  required
+                  value={activity.caloriesBurned}
+                  onChange={(e) => setActivity({ ...activity, caloriesBurned: e.target.value })}
+                  placeholder="e.g. 380"
+                  slotProps={{
+                    input: {
+                      sx: { 
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontWeight: 700
+                      }
+                    },
+                    inputLabel: {
+                      sx: { 
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em'
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  size="small"
+                  onClick={handleEstimateCalories}
+                  sx={{
+                    mt: 0.8,
+                    p: 0,
+                    fontSize: '0.72rem',
+                    color: '#b4ff00',
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    '&:hover': {
+                      background: 'none',
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  ⚡ Auto-Calculate (~{currentConfig.defaultCalPerMin} kcal/min)
+                </Button>
+              </Box>
+            </Grid>
+
+            {/* Submit Action Button */}
             <Grid size={{ xs: 12 }}>
               <Button
                 type="submit"
                 variant="contained"
                 size="large"
                 fullWidth
-                disabled={loading || !activity.duration || !activity.caloriesBurned}
+                disabled={loading}
                 sx={{
-                  py: 1.6,
-                  fontSize: '1rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.02em',
-                  background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #06B6D4 100%)',
+                  py: 1.8,
+                  backgroundColor: '#b4ff00',
+                  color: '#0c0c0f',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 900,
+                  fontSize: '1.2rem',
+                  letterSpacing: '0.05em',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 20px rgba(180, 255, 0, 0.3)',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    backgroundColor: '#c9ff33',
+                    boxShadow: '0 6px 30px rgba(180, 255, 0, 0.5)',
+                    transform: 'translateY(-1px)'
+                  }
                 }}
               >
                 {loading ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CircularProgress size={22} color="inherit" />
-                    <span>Publishing to Microservices & AI Coach...</span>
+                    <CircularProgress size={22} sx={{ color: '#0c0c0f' }} />
+                    <span>PUBLISHING TO RABBITMQ & OPENROUTER AI...</span>
                   </Box>
                 ) : (
-                  <span>🚀 Log Workout & Generate AI Coaching Report</span>
+                  <span>🚀 LOG WORKOUT & INITIALIZE AI COACHING</span>
                 )}
               </Button>
             </Grid>

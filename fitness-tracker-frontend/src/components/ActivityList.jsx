@@ -18,22 +18,23 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { deleteActivity } from '../services/api';
 
 const ACTIVITY_METADATA = {
-  RUNNING: { label: 'Running', emoji: '🏃‍♂️', color: '#10B981', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.05) 100%)' },
-  WALKING: { label: 'Walking', emoji: '🚶', color: '#06B6D4', gradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)' },
-  STRENGTH_TRAINING: { label: 'Strength Training', emoji: '🏋️', color: '#8B5CF6', gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.05) 100%)' },
-  POWER_LIFTING: { label: 'Power Lifting', emoji: '🏋️‍♂️', color: '#EC4899', gradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(219, 39, 119, 0.05) 100%)' },
-  SWIMMING: { label: 'Swimming', emoji: '🏊', color: '#3B82F6', gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.05) 100%)' },
-  CYCLING: { label: 'Cycling', emoji: '🚴', color: '#F59E0B', gradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.05) 100%)' },
-  CARDIO: { label: 'Cardio', emoji: '❤️', color: '#EF4444', gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.05) 100%)' },
-  YOGA: { label: 'Yoga', emoji: '🧘', color: '#14B8A6', gradient: 'linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.05) 100%)' },
-  PILATES: { label: 'Pilates', emoji: '🤸', color: '#A855F7', gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(147, 51, 234, 0.05) 100%)' },
-  OTHER: { label: 'Other Workout', emoji: '⚡', color: '#9CA3AF', gradient: 'linear-gradient(135deg, rgba(156, 163, 175, 0.2) 0%, rgba(107, 114, 128, 0.05) 100%)' },
+  RUNNING: { label: 'RUNNING', emoji: '🏃‍♂️', color: '#b4ff00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  WALKING: { label: 'WALKING', emoji: '🚶‍♂️', color: '#00d4ff', intensity: 'LOW', intensityColor: '#00d4ff' },
+  STRENGTH_TRAINING: { label: 'STRENGTH TRAINING', emoji: '🏋️‍♂️', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  POWER_LIFTING: { label: 'POWERLIFTING', emoji: '🦾', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  SWIMMING: { label: 'SWIMMING', emoji: '🏊‍♂️', color: '#00d4ff', intensity: 'MED', intensityColor: '#b4ff00' },
+  CYCLING: { label: 'CYCLING', emoji: '🚴‍♂️', color: '#b4ff00', intensity: 'MED', intensityColor: '#b4ff00' },
+  CARDIO: { label: 'CARDIO HIIT', emoji: '⚡', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  YOGA: { label: 'YOGA FLOW', emoji: '🧘‍♀️', color: '#a855f7', intensity: 'LOW', intensityColor: '#00d4ff' },
+  PILATES: { label: 'PILATES', emoji: '🤸‍♀️', color: '#a855f7', intensity: 'LOW', intensityColor: '#00d4ff' },
+  OTHER: { label: 'GENERAL WORKOUT', emoji: '🔥', color: '#fbbf24', intensity: 'MED', intensityColor: '#b4ff00' },
 };
 
 const ActivityList = ({ activities = [], onActivityDeleted }) => {
@@ -90,227 +91,282 @@ const ActivityList = ({ activities = [], onActivityDeleted }) => {
       if (sortBy === 'DURATION_DESC') {
         return (Number(b.duration) || 0) - (Number(a.duration) || 0);
       }
-      // Default: Newest first (by startTime or natural list order)
       return (b.id || '').localeCompare(a.id || '');
     });
 
   const formatDate = (isoString) => {
-    if (!isoString) return 'Recent';
+    if (!isoString) return 'RECENT';
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString(undefined, { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).toUpperCase();
     } catch {
-      return 'Recent';
+      return 'RECENT';
     }
   };
 
   return (
-    <Box sx={{ mt: 4, mb: 8 }}>
-      {/* Header & Controls */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2, mb: 3 }}>
-        <Box>
+    <Box>
+      {/* Feed Title & Search Bar */}
+      <Box sx={{ mb: 3.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-              Your Workout History
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 900, 
+                color: '#f4f4f7',
+                letterSpacing: '0.04em'
+              }}
+            >
+              ATHLETIC ACTIVITY STREAM
             </Typography>
             <Chip 
-              label={`${filteredActivities.length} logs`} 
+              label={`${filteredActivities.length} SESSIONS`} 
               size="small" 
-              sx={{ backgroundColor: 'rgba(16, 185, 129, 0.2)', color: '#10B981', fontWeight: 700 }}
+              sx={{ 
+                fontFamily: '"JetBrains Mono", monospace',
+                fontWeight: 700, 
+                fontSize: '0.75rem',
+                backgroundColor: 'rgba(180, 255, 0, 0.12)', 
+                color: '#b4ff00',
+                border: '1px solid rgba(180, 255, 0, 0.3)'
+              }} 
             />
           </Box>
-          <Typography variant="body2" sx={{ color: '#9CA3AF', mt: 0.3 }}>
-            Click any activity card to explore AI performance feedback, pace tips, and recovery advice.
-          </Typography>
-        </Box>
 
-        {/* Search & Sort */}
-        <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', md: 'auto' } }}>
-          <TextField
-            size="small"
-            placeholder="🔍 Search workouts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ minWidth: { xs: '100%', sm: 220 } }}
-          />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>Sort By</InputLabel>
+          {/* Sort Dropdown */}
+          <FormControl size="small" sx={{ minWidth: 170 }}>
+            <InputLabel id="sort-select-label" sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700 }}>
+              SORT TELEMETRY
+            </InputLabel>
             <Select
+              labelId="sort-select-label"
               value={sortBy}
-              label="Sort By"
+              label="SORT TELEMETRY"
               onChange={(e) => setSortBy(e.target.value)}
+              sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.82rem' }}
             >
-              <MenuItem value="NEWEST">⏱️ Newest First</MenuItem>
-              <MenuItem value="CALORIES_DESC">🔥 Highest Calories</MenuItem>
-              <MenuItem value="DURATION_DESC">⌛ Longest Duration</MenuItem>
+              <MenuItem value="NEWEST" sx={{ fontFamily: '"JetBrains Mono", monospace' }}>LATEST SESSIONS</MenuItem>
+              <MenuItem value="CALORIES_DESC" sx={{ fontFamily: '"JetBrains Mono", monospace' }}>HIGHEST CALORIES</MenuItem>
+              <MenuItem value="DURATION_DESC" sx={{ fontFamily: '"JetBrains Mono", monospace' }}>LONGEST DURATION</MenuItem>
             </Select>
           </FormControl>
-        </Stack>
+        </Box>
+
+        {/* Filter Pills and Search */}
+        <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="SEARCH WORKOUTS, CALORIES, DURATION..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              slotProps={{
+                input: {
+                  sx: { 
+                    fontFamily: '"JetBrains Mono", monospace', 
+                    fontSize: '0.85rem' 
+                  }
+                }
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
+              {['ALL', 'RUNNING', 'STRENGTH_TRAINING', 'CYCLING', 'SWIMMING', 'CARDIO'].map((type) => {
+                const isSelected = filterType === type;
+                return (
+                  <Chip
+                    key={type}
+                    label={type === 'ALL' ? 'ALL SESSIONS' : type.replace('_', ' ')}
+                    onClick={() => setFilterType(type)}
+                    sx={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 800,
+                      letterSpacing: '0.04em',
+                      fontSize: '0.85rem',
+                      px: 0.5,
+                      backgroundColor: isSelected ? '#b4ff00' : '#13131a',
+                      color: isSelected ? '#0c0c0f' : '#8888a0',
+                      border: isSelected ? '1px solid #b4ff00' : '1px solid rgba(255, 255, 255, 0.08)',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: isSelected ? '#c9ff33' : 'rgba(255, 255, 255, 0.05)',
+                        color: isSelected ? '#0c0c0f' : '#f4f4f7'
+                      }
+                    }}
+                  />
+                );
+              })}
+            </Stack>
+          </Grid>
+        </Grid>
       </Box>
 
-      {/* Filter Category Chips */}
-      <Stack direction="row" spacing={1} sx={{ mb: 3, overflowX: 'auto', pb: 1 }}>
-        <Chip
-          label="All Workouts"
-          clickable
-          color={filterType === 'ALL' ? 'primary' : 'default'}
-          onClick={() => setFilterType('ALL')}
-          sx={{ fontWeight: 600 }}
-        />
-        {Object.entries(ACTIVITY_METADATA).map(([key, meta]) => (
-          <Chip
-            key={key}
-            label={`${meta.emoji} ${meta.label}`}
-            clickable
-            variant={filterType === key ? 'filled' : 'outlined'}
-            onClick={() => setFilterType(key)}
-            sx={{
-              fontWeight: 600,
-              borderColor: filterType === key ? meta.color : 'rgba(255, 255, 255, 0.1)',
-              backgroundColor: filterType === key ? `${meta.color}30` : 'transparent',
-              color: filterType === key ? meta.color : '#9CA3AF',
-              '&:hover': {
-                borderColor: meta.color,
-                color: meta.color,
-              }
-            }}
-          />
-        ))}
-      </Stack>
-
-      {/* Activities Grid */}
+      {/* Empty State */}
       {filteredActivities.length === 0 ? (
-        <Card sx={{ p: 5, textAlign: 'center', backgroundColor: 'rgba(17, 24, 39, 0.5)' }}>
-          <Typography variant="h6" sx={{ color: '#9CA3AF', mb: 1 }}>
-            {searchQuery || filterType !== 'ALL' ? 'No matching workouts found' : 'No workouts recorded yet'}
+        <Card 
+          sx={{ 
+            p: 6, 
+            textAlign: 'center', 
+            backgroundColor: '#13131a', 
+            border: '1px dashed rgba(255, 255, 255, 0.1)' 
+          }}
+        >
+          <Typography variant="h1" sx={{ fontSize: '3rem', mb: 1 }}>⚡</Typography>
+          <Typography variant="h5" sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#f4f4f7' }}>
+            NO WORKOUT SESSIONS FOUND
           </Typography>
-          <Typography variant="body2" sx={{ color: '#6B7280' }}>
-            {searchQuery || filterType !== 'ALL' 
-              ? 'Try adjusting your search query or filter tags.' 
-              : 'Log your first workout using the form above to trigger AI generation!'}
+          <Typography variant="body2" sx={{ color: '#8888a0', mt: 1, maxWidth: 400, mx: 'auto' }}>
+            Use the logger above or pick a quick workout preset to publish your first event stream to RabbitMQ and OpenRouter AI.
           </Typography>
         </Card>
       ) : (
+        /* Activity Grid */
         <Grid container spacing={2.5}>
-          {filteredActivities.map((activity) => {
-            const meta = ACTIVITY_METADATA[activity.type] || ACTIVITY_METADATA.OTHER;
-            const calories = activity.calories ?? activity.caloriesBurned ?? 0;
-            const calPerMin = activity.duration ? (calories / activity.duration).toFixed(1) : 0;
+          {filteredActivities.map((act) => {
+            const meta = ACTIVITY_METADATA[act.type] || ACTIVITY_METADATA.OTHER;
+            const calories = act.calories || act.caloriesBurned || 0;
 
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={act.id}>
                 <Card
+                  onClick={() => navigate(`/activities/${act.id}`)}
                   sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
+                    backgroundColor: '#13131a',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '12px',
                     cursor: 'pointer',
-                    background: meta.gradient,
-                    border: `1px solid ${meta.color}40`,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
                     overflow: 'hidden',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 14px 35px ${meta.color}30`,
-                      borderColor: meta.color,
+                      borderColor: 'rgba(180, 255, 0, 0.4)',
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(180, 255, 0, 0.1)'
                     }
                   }}
-                  onClick={() => navigate(`/activities/${activity.id}`)}
                 >
-                  <CardContent sx={{ p: 2.5 }}>
-                    {/* Top Header Row */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                        <Box
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: '12px',
-                            backgroundColor: `${meta.color}25`,
-                            border: `1px solid ${meta.color}50`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '22px',
+                  {/* Intensity Indicator Bar */}
+                  <Box sx={{ height: 3, backgroundColor: meta.intensityColor, width: '100%' }} />
+
+                  <CardContent sx={{ p: 2.8, pb: 1 }}>
+                    {/* Header: Type & Intensity Chip */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography sx={{ fontSize: '1.4rem' }}>{meta.emoji}</Typography>
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            fontFamily: '"Barlow Condensed", sans-serif',
+                            fontWeight: 800, 
+                            color: '#f4f4f7',
+                            letterSpacing: '0.03em'
                           }}
                         >
-                          {meta.emoji}
-                        </Box>
-                        <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#F9FAFB', lineHeight: 1.1 }}>
-                            {meta.label}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#9CA3AF' }}>
-                            {formatDate(activity.startTime || activity.CreatedAt)}
-                          </Typography>
-                        </Box>
+                          {meta.label}
+                        </Typography>
                       </Box>
 
-                      <Chip
-                        label="AI Ready ✨"
-                        size="small"
-                        sx={{
-                          height: 22,
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                          color: '#A78BFA',
-                          border: '1px solid rgba(139, 92, 246, 0.4)'
-                        }}
+                      <Chip 
+                        label={`${meta.intensity} INTENSITY`} 
+                        size="small" 
+                        sx={{ 
+                          fontFamily: '"JetBrains Mono", monospace',
+                          fontSize: '0.65rem', 
+                          fontWeight: 800,
+                          backgroundColor: `${meta.intensityColor}18`,
+                          color: meta.intensityColor,
+                          border: `1px solid ${meta.intensityColor}40`
+                        }} 
                       />
                     </Box>
 
                     {/* Metrics Grid */}
-                    <Grid container spacing={1.5} sx={{ my: 1 }}>
+                    <Grid container spacing={1.5} sx={{ my: 1.5 }}>
                       <Grid size={{ xs: 6 }}>
-                        <Box sx={{ p: 1.2, borderRadius: '10px', backgroundColor: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                          <Typography variant="caption" sx={{ color: '#9CA3AF', display: 'block' }}>
-                            ⏱️ Duration
+                        <Box sx={{ p: 1.5, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                          <Typography variant="caption" sx={{ fontFamily: '"Barlow Condensed", sans-serif', color: '#8888a0', fontWeight: 800 }}>
+                            DURATION
                           </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 700, color: '#F9FAFB' }}>
-                            {activity.duration} <span style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>mins</span>
+                          <Typography variant="h5" sx={{ fontFamily: '"JetBrains Mono", monospace', fontWeight: 800, color: '#00d4ff', mt: 0.2 }}>
+                            {act.duration || 0} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>MIN</span>
                           </Typography>
                         </Box>
                       </Grid>
 
                       <Grid size={{ xs: 6 }}>
-                        <Box sx={{ p: 1.2, borderRadius: '10px', backgroundColor: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                          <Typography variant="caption" sx={{ color: '#9CA3AF', display: 'block' }}>
-                            🔥 Calories
+                        <Box sx={{ p: 1.5, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                          <Typography variant="caption" sx={{ fontFamily: '"Barlow Condensed", sans-serif', color: '#8888a0', fontWeight: 800 }}>
+                            CALORIES
                           </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 700, color: '#F9FAFB' }}>
-                            {calories} <span style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>kcal</span>
+                          <Typography variant="h5" sx={{ fontFamily: '"JetBrains Mono", monospace', fontWeight: 800, color: '#ff4d00', mt: 0.2 }}>
+                            {calories} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>KCAL</span>
                           </Typography>
                         </Box>
                       </Grid>
                     </Grid>
 
-                    <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mt: 1 }}>
-                      Intensity: ~{calPerMin} kcal / min
-                    </Typography>
+                    {/* Timestamp & Pace Rate */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+                      <Typography variant="caption" sx={{ fontFamily: '"JetBrains Mono", monospace', color: '#8888a0', fontSize: '0.7rem' }}>
+                        {formatDate(act.startTime || act.CreatedAt)}
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontFamily: '"JetBrains Mono", monospace', color: '#b4ff00', fontWeight: 700, fontSize: '0.7rem' }}>
+                        ~{act.duration > 0 ? (calories / act.duration).toFixed(1) : 0} KCAL/MIN
+                      </Typography>
+                    </Box>
                   </CardContent>
 
-                  {/* Actions Footer */}
-                  <CardActions sx={{ px: 2.5, pb: 2, pt: 0, justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <Button
-                      size="small"
-                      variant="text"
-                      sx={{ color: meta.color, fontWeight: 700, p: 0 }}
-                      onClick={() => navigate(`/activities/${activity.id}`)}
+                  {/* Actions Bar */}
+                  <CardActions sx={{ px: 2.8, pb: 2.2, pt: 0, justifyContent: 'space-between' }}>
+                    <Button 
+                      size="small" 
+                      variant="outlined"
+                      sx={{ 
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.04em',
+                        color: '#b4ff00',
+                        borderColor: 'rgba(180, 255, 0, 0.3)',
+                        '&:hover': {
+                          borderColor: '#b4ff00',
+                          backgroundColor: 'rgba(180, 255, 0, 0.1)',
+                          boxShadow: '0 0 15px rgba(180, 255, 0, 0.25)'
+                        }
+                      }}
                     >
-                      Explore AI Coach →
+                      ⚡ VIEW AI REPORT
                     </Button>
-                    <Button
+
+                    <Button 
                       size="small"
-                      variant="text"
-                      color="error"
-                      sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
-                      onClick={(e) => openDeleteDialog(e, activity.id)}
+                      onClick={(e) => openDeleteDialog(e, act.id)}
+                      sx={{ 
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontSize: '0.75rem',
+                        color: '#8888a0',
+                        minWidth: 'auto',
+                        p: 0.8,
+                        '&:hover': {
+                          color: '#ff4d00',
+                          backgroundColor: 'rgba(255, 77, 0, 0.1)'
+                        }
+                      }}
                     >
-                      🗑️ Delete
+                      DELETE
                     </Button>
                   </CardActions>
                 </Card>
@@ -326,32 +382,41 @@ const ActivityList = ({ activities = [], onActivityDeleted }) => {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
-            backgroundColor: '#111827',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
+            backgroundColor: '#13131a',
+            border: '1px solid rgba(255, 255, 255, 0.09)',
+            borderRadius: '14px',
             p: 1
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, color: '#F9FAFB' }}>
-          Delete Activity?
+        <DialogTitle sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#f4f4f7', fontSize: '1.3rem' }}>
+          CONFIRM SESSION DELETION
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: '#9CA3AF' }}>
-            Are you sure you want to delete this workout log? This action cannot be undone.
+          <DialogContentText sx={{ color: '#8888a0', fontFamily: '"DM Sans", sans-serif' }}>
+            Are you sure you want to delete this workout session from your telemetry log? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ pb: 2, px: 3 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#9CA3AF' }}>
-            Cancel
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button 
+            onClick={() => setDeleteDialogOpen(false)} 
+            sx={{ color: '#8888a0', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700 }}
+          >
+            CANCEL
           </Button>
           <Button 
+            onClick={handleConfirmDelete} 
             variant="contained" 
-            color="error" 
-            onClick={handleConfirmDelete}
+            color="secondary"
             disabled={deleting}
+            sx={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 800,
+              backgroundColor: '#ff4d00',
+              '&:hover': { backgroundColor: '#ff6622' }
+            }}
           >
-            {deleting ? 'Deleting...' : 'Confirm Delete'}
+            {deleting ? <CircularProgress size={18} color="inherit" /> : 'CONFIRM DELETE'}
           </Button>
         </DialogActions>
       </Dialog>

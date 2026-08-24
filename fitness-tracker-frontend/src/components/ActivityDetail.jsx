@@ -15,21 +15,22 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  Container
 } from '@mui/material';
 import { getActivityDetail, deleteActivity } from '../services/api';
 
 const ACTIVITY_METADATA = {
-  RUNNING: { label: 'Running', emoji: '🏃‍♂️', color: '#10B981', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.05) 100%)' },
-  WALKING: { label: 'Walking', emoji: '🚶‍♂️', color: '#14B8A6', gradient: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)' },
-  STRENGTH_TRAINING: { label: 'Strength Training', emoji: '🏋️‍♂️', color: '#F59E0B', gradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%)' },
-  POWER_LIFTING: { label: 'Powerlifting', emoji: '🦾', color: '#EF4444', gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%)' },
-  SWIMMING: { label: 'Swimming', emoji: '🏊‍♂️', color: '#06B6D4', gradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)' },
-  CYCLING: { label: 'Cycling', emoji: '🚴‍♂️', color: '#3B82F6', gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)' },
-  CARDIO: { label: 'Cardio HIIT', emoji: '⚡', color: '#EC4899', gradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%)' },
-  YOGA: { label: 'Yoga Flow', emoji: '🧘‍♀️', color: '#8B5CF6', gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.05) 100%)' },
-  PILATES: { label: 'Pilates', emoji: '🤸‍♀️', color: '#A855F7', gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)' },
-  OTHER: { label: 'General Workout', emoji: '🔥', color: '#F97316', gradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%)' },
+  RUNNING: { label: 'RUNNING', emoji: '🏃‍♂️', color: '#b4ff00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  WALKING: { label: 'WALKING', emoji: '🚶‍♂️', color: '#00d4ff', intensity: 'LOW', intensityColor: '#00d4ff' },
+  STRENGTH_TRAINING: { label: 'STRENGTH TRAINING', emoji: '🏋️‍♂️', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  POWER_LIFTING: { label: 'POWERLIFTING', emoji: '🦾', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  SWIMMING: { label: 'SWIMMING', emoji: '🏊‍♂️', color: '#00d4ff', intensity: 'MED', intensityColor: '#b4ff00' },
+  CYCLING: { label: 'CYCLING', emoji: '🚴‍♂️', color: '#b4ff00', intensity: 'MED', intensityColor: '#b4ff00' },
+  CARDIO: { label: 'CARDIO HIIT', emoji: '⚡', color: '#ff4d00', intensity: 'HIGH', intensityColor: '#ff4d00' },
+  YOGA: { label: 'YOGA FLOW', emoji: '🧘‍♀️', color: '#a855f7', intensity: 'LOW', intensityColor: '#00d4ff' },
+  PILATES: { label: 'PILATES', emoji: '🤸‍♀️', color: '#a855f7', intensity: 'LOW', intensityColor: '#00d4ff' },
+  OTHER: { label: 'GENERAL WORKOUT', emoji: '🔥', color: '#fbbf24', intensity: 'MED', intensityColor: '#b4ff00' },
 };
 
 const ActivityDetail = () => {
@@ -101,313 +102,397 @@ const ActivityDetail = () => {
     }
   };
 
-  const currentMeta = ACTIVITY_METADATA[recommendation?.activityType] || ACTIVITY_METADATA.OTHER;
-
-  if (loading) {
-    return (
-      <Box sx={{ py: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-        <CircularProgress size={48} sx={{ color: '#10B981' }} />
-        <Typography variant="h6" sx={{ color: '#F9FAFB', fontWeight: 600 }}>
-          Retrieving AI Coaching Report...
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
-          Connecting to AI Microservice via API Gateway...
-        </Typography>
-      </Box>
-    );
-  }
+  const currentType = recommendation?.activityType || 'OTHER';
+  const meta = ACTIVITY_METADATA[currentType] || ACTIVITY_METADATA.OTHER;
 
   return (
-    <Box sx={{ maxWidth: 960, mx: 'auto', py: 3, px: { xs: 2, sm: 3 } }}>
-      {/* Top Action Bar */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Button 
-          variant="outlined" 
-          onClick={() => navigate('/activities')}
-          sx={{ borderColor: 'rgba(255, 255, 255, 0.15)', color: '#E5E7EB' }}
-        >
-          ← Back to Dashboard
-        </Button>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button 
-            variant="text" 
-            onClick={handleManualRefresh} 
-            disabled={isRefreshing}
-            sx={{ color: '#10B981', fontWeight: 700 }}
-          >
-            {isRefreshing ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CircularProgress size={16} color="inherit" />
-                <span>Refreshing...</span>
-              </Box>
-            ) : (
-              <span>🔄 Refresh</span>
-            )}
-          </Button>
-          <Button 
-            variant="outlined" 
-            color="error" 
-            onClick={() => setDeleteDialogOpen(true)}
-            sx={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}
-          >
-            🗑️ Delete Activity
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Generating Radar Indicator */}
-      {isGenerating && !recommendation && (
-        <Card sx={{ p: 4, mb: 4, textAlign: 'center', border: '1px solid rgba(139, 92, 246, 0.4)', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(17, 24, 39, 0.95) 100%)' }}>
-          <CircularProgress size={44} sx={{ color: '#8B5CF6', mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-            🤖 AI Coach is Processing Your Workout
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#A78BFA', maxWidth: 500, mx: 'auto', mt: 1 }}>
-            OpenRouter AI is analyzing your energy expenditure, duration, and safety parameters. This page will update automatically in a moment.
-          </Typography>
-          <LinearProgress sx={{ mt: 3, height: 6, borderRadius: 3, backgroundColor: 'rgba(139, 92, 246, 0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#8B5CF6' } }} />
-        </Card>
-      )}
-
-      {/* Full AI Recommendation Report */}
-      {recommendation ? (
-        <Stack spacing={3.5}>
-          {/* Hero Banner */}
-          <Card 
-            sx={{ 
-              p: 3.5, 
-              border: `1px solid ${currentMeta.color}50`, 
-              background: `linear-gradient(135deg, ${currentMeta.color}25 0%, rgba(17, 24, 39, 0.9) 100%)`,
-              boxShadow: `0 12px 35px ${currentMeta.color}20`,
+    <Box sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+      <Container maxWidth="lg">
+        {/* Navigation & Action Bar */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3.5, flexWrap: 'wrap', gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/activities')}
+            sx={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              letterSpacing: '0.04em',
+              borderColor: 'rgba(255, 255, 255, 0.12)',
+              color: '#f4f4f7',
+              '&:hover': {
+                borderColor: '#b4ff00',
+                backgroundColor: 'rgba(180, 255, 0, 0.08)'
+              }
             }}
           >
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 58,
-                    height: 58,
-                    borderRadius: '16px',
-                    backgroundColor: `${currentMeta.color}30`,
-                    border: `1px solid ${currentMeta.color}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '30px',
-                    boxShadow: `0 0 20px ${currentMeta.color}40`,
-                  }}
-                >
-                  {currentMeta.emoji}
-                </Box>
-                <Box>
-                  <Typography variant="caption" sx={{ color: currentMeta.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Personalized AI Coaching
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-                    {currentMeta.label} Analysis
-                  </Typography>
-                </Box>
-              </Box>
+            ← BACK TO SESSIONS
+          </Button>
 
-              <Chip 
-                label="✨ AI Coach Verified" 
-                sx={{ 
-                  backgroundColor: 'rgba(139, 92, 246, 0.25)', 
-                  color: '#C4B5FD', 
-                  border: '1px solid rgba(139, 92, 246, 0.5)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem'
-                }} 
-              />
-            </Box>
-          </Card>
-
-          {/* Performance Analysis Card */}
-          <Card sx={{ border: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(17, 24, 39, 0.85)' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#F9FAFB', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                📊 Performance Breakdown
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#E5E7EB', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
-                {recommendation.recommendation || 'Detailed workout evaluation complete.'}
-              </Typography>
-            </CardContent>
-          </Card>
-
-          {/* Improvements & Suggestions Grid */}
-          <Grid container spacing={3}>
-            {/* Suggested Improvements */}
-            {recommendation.improvements && recommendation.improvements.length > 0 && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card sx={{ height: '100%', border: '1px solid rgba(16, 185, 129, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#10B981', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      🚀 Focus Areas & Improvements
-                    </Typography>
-                    <Stack spacing={1.5}>
-                      {recommendation.improvements.map((item, idx) => (
-                        <Box 
-                          key={idx} 
-                          sx={{ 
-                            p: 1.5, 
-                            borderRadius: '10px', 
-                            backgroundColor: 'rgba(16, 185, 129, 0.08)', 
-                            border: '1px solid rgba(16, 185, 129, 0.15)',
-                            display: 'flex',
-                            gap: 1.5
-                          }}
-                        >
-                          <span style={{ color: '#10B981', fontWeight: 800 }}>•</span>
-                          <Typography variant="body2" sx={{ color: '#F3F4F6', lineHeight: 1.5 }}>
-                            {item}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Workout Suggestions */}
-            {recommendation.suggestion && recommendation.suggestion.length > 0 && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card sx={{ height: '100%', border: '1px solid rgba(6, 182, 212, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#06B6D4', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      🎯 Next Workout Suggestions
-                    </Typography>
-                    <Stack spacing={1.5}>
-                      {recommendation.suggestion.map((item, idx) => (
-                        <Box 
-                          key={idx} 
-                          sx={{ 
-                            p: 1.5, 
-                            borderRadius: '10px', 
-                            backgroundColor: 'rgba(6, 182, 212, 0.08)', 
-                            border: '1px solid rgba(6, 182, 212, 0.15)',
-                            display: 'flex',
-                            gap: 1.5
-                          }}
-                        >
-                          <span style={{ color: '#06B6D4', fontWeight: 800 }}>★</span>
-                          <Typography variant="body2" sx={{ color: '#F3F4F6', lineHeight: 1.5 }}>
-                            {item}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Safety Guidelines */}
-            {recommendation.safety && recommendation.safety.length > 0 && (
-              <Grid size={{ xs: 12 }}>
-                <Card sx={{ border: '1px solid rgba(245, 158, 11, 0.3)', background: 'rgba(17, 24, 39, 0.85)' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#F59E0B', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      🛡️ Recovery & Injury Prevention Guidelines
-                    </Typography>
-                    <Grid container spacing={1.5}>
-                      {recommendation.safety.map((item, idx) => (
-                        <Grid size={{ xs: 12, sm: 6 }} key={idx}>
-                          <Box 
-                            sx={{ 
-                              p: 1.5, 
-                              borderRadius: '10px', 
-                              backgroundColor: 'rgba(245, 158, 11, 0.08)', 
-                              border: '1px solid rgba(245, 158, 11, 0.15)',
-                              display: 'flex',
-                              gap: 1.5,
-                              alignItems: 'flex-start'
-                            }}
-                          >
-                            <span style={{ color: '#F59E0B' }}>✓</span>
-                            <Typography variant="body2" sx={{ color: '#F3F4F6', lineHeight: 1.5 }}>
-                              {item}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-          </Grid>
-        </Stack>
-      ) : (
-        !isGenerating && (
-          <Card sx={{ p: 5, textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(17, 24, 39, 0.6)' }}>
-            <Box sx={{ fontSize: '3rem', mb: 1 }}>🤖</Box>
-            <Typography variant="h5" sx={{ color: '#F9FAFB', fontWeight: 700, mb: 1 }}>
-              No AI Recommendation Found Yet
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#9CA3AF', maxWidth: 450, mx: 'auto', mb: 3 }}>
-              Click below to generate a fresh, personalized AI coaching report for this workout using OpenRouter.
-            </Typography>
-            <Button 
-              variant="contained" 
-              size="large"
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              variant="outlined"
+              size="small"
               onClick={handleManualRefresh}
-              disabled={isRefreshing}
+              disabled={isRefreshing || isGenerating}
               sx={{
-                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                fontWeight: 700,
-                px: 4,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                letterSpacing: '0.04em',
+                borderColor: 'rgba(180, 255, 0, 0.4)',
+                color: '#b4ff00',
+                '&:hover': {
+                  borderColor: '#b4ff00',
+                  backgroundColor: 'rgba(180, 255, 0, 0.1)'
+                }
+              }}
+            >
+              {isRefreshing ? 'REFRESHING...' : '🔄 RE-ANALYZE WITH AI'}
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setDeleteDialogOpen(true)}
+              sx={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                letterSpacing: '0.04em',
+                borderColor: 'rgba(255, 77, 0, 0.3)',
+                color: '#ff4d00',
+                '&:hover': {
+                  borderColor: '#ff4d00',
+                  backgroundColor: 'rgba(255, 77, 0, 0.1)'
+                }
+              }}
+            >
+              DELETE SESSION
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Loading / Generating State */}
+        {loading ? (
+          <Card sx={{ p: 6, textAlign: 'center', backgroundColor: '#13131a', border: '1px solid rgba(255, 255, 255, 0.07)' }}>
+            <CircularProgress size={45} sx={{ color: '#b4ff00', mb: 2 }} />
+            <Typography variant="h5" sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#f4f4f7' }}>
+              FETCHING WORKOUT TELEMETRY...
+            </Typography>
+          </Card>
+        ) : isGenerating ? (
+          <Card sx={{ p: 5, textAlign: 'center', backgroundColor: '#13131a', border: '1px solid rgba(180, 255, 0, 0.3)', mb: 3 }}>
+            <LinearProgress sx={{ mb: 3, backgroundColor: 'rgba(180, 255, 0, 0.15)', '& .MuiLinearProgress-bar': { backgroundColor: '#b4ff00' } }} />
+            <Typography variant="h4" sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#b4ff00' }}>
+              🤖 OPENROUTER AI COACH IN PROGRESS
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#8888a0', mt: 1, fontFamily: '"JetBrains Mono", monospace' }}>
+              Consuming RabbitMQ event stream & synthesizing biomechanical telemetry...
+            </Typography>
+          </Card>
+        ) : !recommendation ? (
+          <Card sx={{ p: 6, textAlign: 'center', backgroundColor: '#13131a', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+            <Typography variant="h1" sx={{ fontSize: '3rem', mb: 1 }}>⏱️</Typography>
+            <Typography variant="h5" sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#f4f4f7' }}>
+              AI COACH REPORT NOT YET READY
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#8888a0', mt: 1, mb: 3, maxWidth: 500, mx: 'auto' }}>
+              The AI service is either processing your telemetry or awaiting queue pickup.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleManualRefresh}
+              sx={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 900,
+                backgroundColor: '#b4ff00',
+                color: '#0c0c0f',
+                px: 3,
                 py: 1.2
               }}
             >
-              {isRefreshing ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircularProgress size={18} color="inherit" />
-                  <span>Generating AI Report...</span>
-                </Box>
-              ) : (
-                <span>⚡ Generate AI Coaching Report Now</span>
-              )}
+              ⚡ GENERATE AI COACHING REPORT NOW
             </Button>
           </Card>
-        )
-      )}
+        ) : (
+          /* Main AI Coaching Report Dashboard */
+          <Stack spacing={3}>
+            {/* Header Hero Card */}
+            <Card
+              sx={{
+                backgroundColor: '#13131a',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                borderRadius: '14px',
+                overflow: 'hidden',
+                position: 'relative'
+              }}
+            >
+              <Box sx={{ height: 4, background: 'linear-gradient(90deg, #b4ff00 0%, #00d4ff 50%, #ff4d00 100%)' }} />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: '#111827',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
-            p: 1
-          }
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, color: '#F9FAFB' }}>
-          Delete Activity Log?
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ color: '#9CA3AF' }}>
-            Are you sure you want to permanently delete this workout activity and its AI report?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ pb: 2, px: 3 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#9CA3AF' }}>
-            Cancel
-          </Button>
-          <Button 
-            variant="contained" 
-            color="error" 
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            {deleting ? 'Deleting...' : 'Delete Activity'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                      <Typography sx={{ fontSize: '2rem' }}>{meta.emoji}</Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 900,
+                          color: '#f4f4f7',
+                          letterSpacing: '0.04em',
+                          lineHeight: 1
+                        }}
+                      >
+                        {meta.label} PERFORMANCE REPORT
+                      </Typography>
+                    </Box>
+
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontFamily: '"JetBrains Mono", monospace',
+                        color: '#8888a0',
+                        fontSize: '0.75rem',
+                        display: 'block'
+                      }}
+                    >
+                      SESSION ID: <span style={{ color: '#00d4ff' }}>{id}</span> • AI REPORT ID: <span style={{ color: '#b4ff00' }}>{recommendation.id}</span>
+                    </Typography>
+                  </Box>
+
+                  <Chip
+                    label="⚡ OPENROUTER AI VERIFIED"
+                    sx={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      backgroundColor: 'rgba(180, 255, 0, 0.12)',
+                      color: '#b4ff00',
+                      border: '1px solid rgba(180, 255, 0, 0.3)'
+                    }}
+                  />
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* AI Executive Summary Card */}
+            <Card
+              sx={{
+                backgroundColor: '#13131a',
+                border: '1px solid rgba(180, 255, 0, 0.3)',
+                boxShadow: '0 0 30px rgba(180, 255, 0, 0.08)',
+                borderRadius: '14px',
+                p: 3.5
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#b4ff00', boxShadow: '0 0 10px #b4ff00' }} />
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 800,
+                    color: '#b4ff00',
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  EXECUTIVE COACHING SYNTHESIS
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#f4f4f7',
+                  lineHeight: 1.8,
+                  fontSize: '1.05rem',
+                  fontFamily: '"DM Sans", sans-serif'
+                }}
+              >
+                {recommendation.recommendation || 'Biomechanical evaluation successfully completed. Review specific focus areas below.'}
+              </Typography>
+            </Card>
+
+            {/* 3 Kinetic Pillar Cards */}
+            <Grid container spacing={3}>
+              {/* Focus Areas */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    backgroundColor: '#13131a',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '14px',
+                    p: 3,
+                    transition: 'all 0.2s',
+                    '&:hover': { borderColor: '#b4ff00', transform: 'translateY(-2px)' }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '1.4rem' }}>🎯</Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 800,
+                        color: '#b4ff00',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      OPTIMIZATION & FOCUS AREAS
+                    </Typography>
+                  </Box>
+
+                  <Stack spacing={1.8}>
+                    {(recommendation.improvements || ['Maintain consistent cadence and effort']).map((item, idx) => (
+                      <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ color: '#b4ff00', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace', fontSize: '0.9rem', mt: '2px' }}>
+                          0{idx + 1}.
+                        </Box>
+                        <Typography variant="body2" sx={{ color: '#f4f4f7', lineHeight: 1.6 }}>
+                          {item}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Card>
+              </Grid>
+
+              {/* Next Workout Suggestions */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    backgroundColor: '#13131a',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '14px',
+                    p: 3,
+                    transition: 'all 0.2s',
+                    '&:hover': { borderColor: '#00d4ff', transform: 'translateY(-2px)' }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '1.4rem' }}>🚀</Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 800,
+                        color: '#00d4ff',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      NEXT SESSION RECOMMENDATIONS
+                    </Typography>
+                  </Box>
+
+                  <Stack spacing={1.8}>
+                    {(recommendation.suggestion || ['Progressive overload with recovery intervals']).map((item, idx) => (
+                      <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ color: '#00d4ff', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace', fontSize: '0.9rem', mt: '2px' }}>
+                          0{idx + 1}.
+                        </Box>
+                        <Typography variant="body2" sx={{ color: '#f4f4f7', lineHeight: 1.6 }}>
+                          {item}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Card>
+              </Grid>
+
+              {/* Safety & Recovery */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    backgroundColor: '#13131a',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '14px',
+                    p: 3,
+                    transition: 'all 0.2s',
+                    '&:hover': { borderColor: '#ff4d00', transform: 'translateY(-2px)' }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '1.4rem' }}>🛡️</Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 800,
+                        color: '#ff4d00',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      RECOVERY & INJURY PREVENTION
+                    </Typography>
+                  </Box>
+
+                  <Stack spacing={1.8}>
+                    {(recommendation.safety || ['Ensure hydration and adequate post-workout sleep']).map((item, idx) => (
+                      <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ color: '#ff4d00', fontWeight: 900, fontFamily: '"JetBrains Mono", monospace', fontSize: '0.9rem', mt: '2px' }}>
+                          0{idx + 1}.
+                        </Box>
+                        <Typography variant="body2" sx={{ color: '#f4f4f7', lineHeight: 1.6 }}>
+                          {item}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Card>
+              </Grid>
+            </Grid>
+          </Stack>
+        )}
+
+        {/* Delete Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          PaperProps={{
+            sx: {
+              backgroundColor: '#13131a',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              borderRadius: '14px',
+              p: 1
+            }
+          }}
+        >
+          <DialogTitle sx={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 800, color: '#f4f4f7', fontSize: '1.3rem' }}>
+            CONFIRM SESSION DELETION
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ color: '#8888a0', fontFamily: '"DM Sans", sans-serif' }}>
+              Are you sure you want to permanently delete this workout session and its AI coaching telemetry?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ p: 2, pt: 0 }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{ color: '#8888a0', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700 }}
+            >
+              CANCEL
+            </Button>
+            <Button
+              onClick={handleDelete}
+              variant="contained"
+              disabled={deleting}
+              sx={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 800,
+                backgroundColor: '#ff4d00',
+                '&:hover': { backgroundColor: '#ff6622' }
+              }}
+            >
+              {deleting ? <CircularProgress size={18} color="inherit" /> : 'CONFIRM DELETE'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
     </Box>
   );
 };
