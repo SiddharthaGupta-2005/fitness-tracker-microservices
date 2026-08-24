@@ -52,7 +52,7 @@ const StatsSummary = ({ activities = [] }) => {
     {
       title: 'AI Coaching Insights',
       value: `${totalWorkouts} Insights`,
-      subtitle: 'Powered by Gemini AI',
+      subtitle: 'Powered by OpenRouter AI',
       icon: '🤖',
       gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(109, 40, 217, 0.05) 100%)',
       borderColor: 'rgba(139, 92, 246, 0.3)',

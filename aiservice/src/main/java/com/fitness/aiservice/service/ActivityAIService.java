@@ -19,12 +19,12 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ActivityAIService {
 
-    private final GeminiService geminiService;
+    private final OpenRouterService openRouterService;
 
     public Recommendation generateRecommendation(Activity activity){
         try {
             String prompt = createPromptForActivity(activity);
-            String aiResponse = geminiService.getAnswer(prompt);
+            String aiResponse = openRouterService.getAnswer(prompt);
             log.info("RESPONSE FROM AI:{} ", aiResponse);
 
             return processAiResponse(activity,aiResponse);
@@ -41,23 +41,12 @@ public class ActivityAIService {
 
             String rawText = null;
 
-            // 1. Check Groq / OpenAI format
+            // Extract content from OpenRouter / OpenAI chat completion response
             JsonNode choices = rootNode.path("choices");
             if (!choices.isMissingNode() && choices.isArray() && !choices.isEmpty()) {
                 JsonNode messageContent = choices.get(0).path("message").path("content");
                 if (!messageContent.isMissingNode()) {
                     rawText = messageContent.asText().trim();
-                }
-            }
-
-            // 2. Check Google Gemini format
-            if (rawText == null) {
-                JsonNode candidates = rootNode.path("candidates");
-                if (!candidates.isMissingNode() && candidates.isArray() && !candidates.isEmpty()) {
-                    JsonNode parts = candidates.get(0).path("content").path("parts");
-                    if (!parts.isMissingNode() && parts.isArray() && !parts.isEmpty()) {
-                        rawText = parts.get(0).path("text").asText().trim();
-                    }
                 }
             }
 

@@ -141,7 +141,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso, onGoogleLogin }) => {
   };
 
   const features = [
-    { icon: '🤖', title: 'Groq AI Coach', desc: 'Real-time workout evaluation & recovery guidance' },
+    { icon: '🤖', title: 'OpenRouter AI Coach', desc: 'Real-time workout evaluation & recovery guidance' },
     { icon: '⚡', title: 'RabbitMQ Microservices', desc: 'Event-driven message routing & high throughput' },
     { icon: '🔒', title: 'OAuth2 & PKCE', desc: 'Enterprise security & reactive identity sync' },
     { icon: '📊', title: 'Polyglot DB Architecture', desc: 'MongoDB for activity streams & PostgreSQL for users' },
@@ -166,7 +166,7 @@ const LoginHero = ({ onLoginSuccess, onKeycloakSso, onGoogleLogin }) => {
           <Grid size={{ xs: 12, md: 6.5 }}>
             <Box sx={{ pr: { md: 4 } }}>
               <Chip 
-                label="⚡ Spring Cloud Microservices + Groq AI" 
+                label="⚡ Spring Cloud Microservices + OpenRouter AI" 
                 sx={{ 
                   backgroundColor: 'rgba(16, 185, 129, 0.15)', 
                   color: '#10B981', 

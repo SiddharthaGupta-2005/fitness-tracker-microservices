@@ -30,13 +30,8 @@ rabbitmq:
   routing:
     key: activity.tracking
 
-gemini:
-  api:
-    url: ${AI_API_URL:${OPENROUTER_API_URL:https://openrouter.ai/api/v1/chat/completions}}
-    key: ${OPENROUTER_API_KEY:${GROQ_API_KEY:${GEMINI_API_KEY:}}}
-
 openrouter:
   api:
     url: ${OPENROUTER_API_URL:https://openrouter.ai/api/v1/chat/completions}
-    key: ${OPENROUTER_API_KEY:${GROQ_API_KEY:${GEMINI_API_KEY:}}}
+    key: ${OPENROUTER_API_KEY:}
     model: ${OPENROUTER_MODEL:openrouter/free}

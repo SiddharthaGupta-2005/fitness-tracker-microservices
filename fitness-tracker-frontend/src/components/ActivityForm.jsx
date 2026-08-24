@@ -95,7 +95,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
         startTime: new Date().toISOString()
       });
 
-      setSuccessMsg(`Workout logged! Gemini AI is now analyzing your ${ACTIVITY_CONFIG[activity.type]?.label || 'workout'} session.`);
+      setSuccessMsg(`Workout logged! AI Coach is now analyzing your ${ACTIVITY_CONFIG[activity.type]?.label || 'workout'} session.`);
       setActivity({ type: 'RUNNING', duration: '', caloriesBurned: '', additionalMetrics: {} });
       
       if (onActivitiesAdded) {
@@ -280,7 +280,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
                 {loading ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <CircularProgress size={22} color="inherit" />
-                    <span>Publishing to Microservices & Gemini AI...</span>
+                    <span>Publishing to Microservices & AI Coach...</span>
                   </Box>
                 ) : (
                   <span>🚀 Log Workout & Generate AI Coaching Report</span>

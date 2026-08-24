@@ -144,7 +144,7 @@ const ActivityDetail = () => {
             🤖 AI is Processing Your Workout
           </Typography>
           <Typography variant="body2" sx={{ color: '#A78BFA', maxWidth: 500, mx: 'auto', mt: 1 }}>
-            Google Gemini is analyzing your energy expenditure, duration, and safety parameters. This page will update automatically in a moment.
+            AI Coach is analyzing your energy expenditure, duration, and safety parameters. This page will update automatically in a moment.
           </Typography>
           <LinearProgress sx={{ mt: 3, height: 6, borderRadius: 3, backgroundColor: 'rgba(139, 92, 246, 0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#8B5CF6' } }} />
         </Card>
@@ -157,7 +157,7 @@ const ActivityDetail = () => {
           <Card 
             sx={{ 
               p: 3.5, 
-              border: `1px solid ${currentMeta.color}50`,
+              border: `1px solid ${currentMeta.color}50`, 
               background: `linear-gradient(135deg, ${currentMeta.color}25 0%, rgba(17, 24, 39, 0.9) 100%)`,
               boxShadow: `0 12px 35px ${currentMeta.color}20`,
             }}
@@ -191,7 +191,7 @@ const ActivityDetail = () => {
               </Box>
 
               <Chip 
-                label="✨ Gemini AI Verified" 
+                label="✨ AI Coach Verified" 
                 sx={{ 
                   backgroundColor: 'rgba(139, 92, 246, 0.25)', 
                   color: '#C4B5FD', 
