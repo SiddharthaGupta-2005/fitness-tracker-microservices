@@ -14,10 +14,10 @@ spring:
     database: fitnessrecommendation
 
   rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST:localhost}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME:guest}
-    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    host: amqps://graassww:kfScBFa0dki-0X_Cn6S-bAyaw4V47Xzm@warthog.lmq.cloudamqp.com/graassww
+    port: 5672
+    username: graassww
+    password: kfScBFa0dki-0X_Cn6S-bAyaw4V47Xzm
 
 eureka:
   client:
