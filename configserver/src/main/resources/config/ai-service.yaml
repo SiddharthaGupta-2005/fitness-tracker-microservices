@@ -4,6 +4,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/fitnessrecommendation
+      database: fitnessrecommendation
+  mongodb:
+    uri: mongodb://localhost:27017/fitnessrecommendation
+    database: fitnessrecommendation
   rabbitmq:
     host: localhost
     port: 5672
@@ -15,7 +19,6 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
-
 rabbitmq:
   exchange:
     name: fitness.exchange
@@ -23,7 +26,6 @@ rabbitmq:
     name: activity.queue
   routing:
     key: activity.tracking
-
 
 openrouter:
   api:
