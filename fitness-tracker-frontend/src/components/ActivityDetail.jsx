@@ -1,38 +1,35 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { getActivityDetail, deleteActivity } from '../services/api';
 import { 
-  Typography, 
+  Box, 
   Card, 
   CardContent, 
-  Box, 
+  Typography, 
   Button, 
-  CircularProgress, 
-  Alert, 
-  Grid, 
   Chip, 
-  Divider, 
-  Paper,
+  CircularProgress, 
   LinearProgress,
+  Stack,
+  Grid,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Stack
+  DialogActions
 } from '@mui/material';
+import { getActivityDetail, deleteActivity } from '../services/api';
 
 const ACTIVITY_METADATA = {
-  RUNNING: { label: 'Running', emoji: '🏃‍♂️', color: '#10B981' },
-  WALKING: { label: 'Walking', emoji: '🚶', color: '#06B6D4' },
-  STRENGTH_TRAINING: { label: 'Strength Training', emoji: '🏋️', color: '#8B5CF6' },
-  POWER_LIFTING: { label: 'Power Lifting', emoji: '🏋️‍♂️', color: '#EC4899' },
-  SWIMMING: { label: 'Swimming', emoji: '🏊', color: '#3B82F6' },
-  CYCLING: { label: 'Cycling', emoji: '🚴', color: '#F59E0B' },
-  CARDIO: { label: 'Cardio', emoji: '❤️', color: '#EF4444' },
-  YOGA: { label: 'Yoga', emoji: '🧘', color: '#14B8A6' },
-  PILATES: { label: 'Pilates', emoji: '🤸', color: '#A855F7' },
-  OTHER: { label: 'Workout', emoji: '⚡', color: '#9CA3AF' },
+  RUNNING: { label: 'Running', emoji: '🏃‍♂️', color: '#10B981', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.05) 100%)' },
+  WALKING: { label: 'Walking', emoji: '🚶‍♂️', color: '#14B8A6', gradient: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)' },
+  STRENGTH_TRAINING: { label: 'Strength Training', emoji: '🏋️‍♂️', color: '#F59E0B', gradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%)' },
+  POWER_LIFTING: { label: 'Powerlifting', emoji: '🦾', color: '#EF4444', gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%)' },
+  SWIMMING: { label: 'Swimming', emoji: '🏊‍♂️', color: '#06B6D4', gradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)' },
+  CYCLING: { label: 'Cycling', emoji: '🚴‍♂️', color: '#3B82F6', gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)' },
+  CARDIO: { label: 'Cardio HIIT', emoji: '⚡', color: '#EC4899', gradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%)' },
+  YOGA: { label: 'Yoga Flow', emoji: '🧘‍♀️', color: '#8B5CF6', gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.05) 100%)' },
+  PILATES: { label: 'Pilates', emoji: '🤸‍♀️', color: '#A855F7', gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)' },
+  OTHER: { label: 'General Workout', emoji: '🔥', color: '#F97316', gradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%)' },
 };
 
 const ActivityDetail = () => {
@@ -40,45 +37,55 @@ const ActivityDetail = () => {
   const navigate = useNavigate();
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const pollCountRef = useRef(0);
 
-  const fetchActivityDetail = async () => {
+  const fetchActivityDetail = async (isManual = false) => {
+    if (isManual) {
+      setIsRefreshing(true);
+    }
     try {
       const response = await getActivityDetail(id);
-      setRecommendation(response.data);
-      setIsGenerating(false);
-      setLoading(false);
+      if (response && response.data) {
+        setRecommendation(response.data);
+        setIsGenerating(false);
+        setLoading(false);
+        setIsRefreshing(false);
+      }
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        if (pollCountRef.current < 25) {
+        if (pollCountRef.current < 15) {
           pollCountRef.current += 1;
           setIsGenerating(true);
           setLoading(false);
-          setTimeout(fetchActivityDetail, 2000);
+          setTimeout(() => fetchActivityDetail(false), 2500);
         } else {
           setIsGenerating(false);
           setLoading(false);
+          setIsRefreshing(false);
         }
       } else {
         console.error('Error fetching recommendation:', error);
         setIsGenerating(false);
         setLoading(false);
+        setIsRefreshing(false);
       }
     }
   };
 
   useEffect(() => {
     pollCountRef.current = 0;
+    setLoading(true);
     fetchActivityDetail();
   }, [id]);
 
   const handleManualRefresh = () => {
-    setLoading(true);
     pollCountRef.current = 0;
-    fetchActivityDetail();
+    setIsGenerating(true);
+    fetchActivityDetail(true);
   };
 
   const handleDelete = async () => {
@@ -122,8 +129,20 @@ const ActivityDetail = () => {
           ← Back to Dashboard
         </Button>
         <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button variant="text" onClick={handleManualRefresh} sx={{ color: '#10B981' }}>
-            🔄 Refresh
+          <Button 
+            variant="text" 
+            onClick={handleManualRefresh} 
+            disabled={isRefreshing}
+            sx={{ color: '#10B981', fontWeight: 700 }}
+          >
+            {isRefreshing ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress size={16} color="inherit" />
+                <span>Refreshing...</span>
+              </Box>
+            ) : (
+              <span>🔄 Refresh</span>
+            )}
           </Button>
           <Button 
             variant="outlined" 
@@ -141,10 +160,10 @@ const ActivityDetail = () => {
         <Card sx={{ p: 4, mb: 4, textAlign: 'center', border: '1px solid rgba(139, 92, 246, 0.4)', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(17, 24, 39, 0.95) 100%)' }}>
           <CircularProgress size={44} sx={{ color: '#8B5CF6', mb: 2 }} />
           <Typography variant="h5" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-            🤖 AI is Processing Your Workout
+            🤖 AI Coach is Processing Your Workout
           </Typography>
           <Typography variant="body2" sx={{ color: '#A78BFA', maxWidth: 500, mx: 'auto', mt: 1 }}>
-            AI Coach is analyzing your energy expenditure, duration, and safety parameters. This page will update automatically in a moment.
+            OpenRouter AI is analyzing your energy expenditure, duration, and safety parameters. This page will update automatically in a moment.
           </Typography>
           <LinearProgress sx={{ mt: 3, height: 6, borderRadius: 3, backgroundColor: 'rgba(139, 92, 246, 0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#8B5CF6' } }} />
         </Card>
@@ -203,29 +222,15 @@ const ActivityDetail = () => {
             </Box>
           </Card>
 
-          {/* AI Coach Detailed Analysis */}
-          <Card sx={{ border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(17, 24, 39, 0.85)' }}>
-            <CardContent sx={{ p: 3.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#F9FAFB' }}>
-                  📊 Coach's Workout Evaluation
-                </Typography>
-              </Box>
-              
-              <Paper 
-                sx={{ 
-                  p: 2.5, 
-                  backgroundColor: 'rgba(15, 23, 42, 0.6)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: 2.5,
-                  lineHeight: 1.7,
-                  color: '#E5E7EB',
-                  fontSize: '1rem',
-                  whiteSpace: 'pre-line'
-                }}
-              >
-                {recommendation.recommendation || 'No detailed analysis text returned.'}
-              </Paper>
+          {/* Performance Analysis Card */}
+          <Card sx={{ border: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(17, 24, 39, 0.85)' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#F9FAFB', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                📊 Performance Breakdown
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#E5E7EB', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+                {recommendation.recommendation || 'Detailed workout evaluation complete.'}
+              </Typography>
             </CardContent>
           </Card>
 
@@ -335,15 +340,34 @@ const ActivityDetail = () => {
         </Stack>
       ) : (
         !isGenerating && (
-          <Card sx={{ p: 5, textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <Typography variant="h6" sx={{ color: '#F9FAFB', mb: 1 }}>
-              No AI Recommendation Available
+          <Card sx={{ p: 5, textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(17, 24, 39, 0.6)' }}>
+            <Box sx={{ fontSize: '3rem', mb: 1 }}>🤖</Box>
+            <Typography variant="h5" sx={{ color: '#F9FAFB', fontWeight: 700, mb: 1 }}>
+              No AI Recommendation Found Yet
             </Typography>
-            <Typography variant="body2" sx={{ color: '#9CA3AF', mb: 3 }}>
-              The AI service did not generate insights for this activity yet.
+            <Typography variant="body2" sx={{ color: '#9CA3AF', maxWidth: 450, mx: 'auto', mb: 3 }}>
+              Click below to generate a fresh, personalized AI coaching report for this workout using OpenRouter.
             </Typography>
-            <Button variant="contained" onClick={handleManualRefresh}>
-              🔄 Try Fetching Again
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              sx={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                fontWeight: 700,
+                px: 4,
+                py: 1.2
+              }}
+            >
+              {isRefreshing ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={18} color="inherit" />
+                  <span>Generating AI Report...</span>
+                </Box>
+              ) : (
+                <span>⚡ Generate AI Coaching Report Now</span>
+              )}
             </Button>
           </Card>
         )
