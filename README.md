@@ -9,7 +9,7 @@
 [![OpenRouter](https://img.shields.io/badge/AI%20Engine-OpenRouter%20LLM-purple.svg)](https://openrouter.ai/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ed.svg)](https://www.docker.com/)
 
-> **FitPulse AI** is a production-grade, event-driven fitness tracking and autonomous AI coaching ecosystem built on Spring Cloud microservices, React 19, RabbitMQ, Keycloak OAuth2 with PKCE, and OpenRouter neural intelligence.
+> **FitPulse AI** is a production-grade, event-driven fitness tracking and autonomous AI coaching ecosystem built with Spring Cloud microservices, React 19, RabbitMQ, Keycloak OAuth2 with PKCE, and OpenRouter neural intelligence.
 
 ---
 
@@ -46,75 +46,85 @@ graph TD
 
 ## ✨ Key Features
 
-- 🤖 **Neural AI Coaching**: Evaluates workouts asynchronously via OpenRouter free-tier models (`openrouter/free`, `meta-llama/llama-3.3-70b-instruct:free`) with on-demand fallback recovery.
-- ⚡ **Event-Driven Microservices**: Decoupled message routing with RabbitMQ exchanges and dead-letter tolerance.
+- 🤖 **Autonomous AI Coaching**: Evaluates workout duration, calorie burn, and intensity asynchronously via OpenRouter free-tier models (`openrouter/free`, `meta-llama/llama-3.3-70b-instruct:free`).
+- ⚡ **Event-Driven Microservices**: Decoupled message routing with RabbitMQ exchange `fitness.exchange` and queue `activity.tracking`.
 - 🔒 **Enterprise Authentication**: Keycloak OAuth2 with PKCE for secure 1-click Google Sign-In and automated PostgreSQL user provisioning.
 - 📊 **Polyglot Persistence**: 
-  - **PostgreSQL** (`fitness_user_db`) for relational user state.
-  - **MongoDB** (`fitnessactivity` & `fitnessrecommendation`) for high-throughput time-series telemetry and AI coaching reports.
-- 🎨 **Kinetic Dark UI**: Built with React 19, Vite, Material UI, `Barlow Condensed` athletic headings, `DM Sans`, and `JetBrains Mono` tabular telemetry.
+  - **PostgreSQL** (`fitness_user_db`) for relational user identity and profile state.
+  - **MongoDB** (`fitnessactivity` & `fitnessrecommendation`) for time-series activity streams and AI coaching reports.
+- 🎨 **Kinetic Dark UI**: Athletic dashboard built with React 19, Vite, Material UI, `Barlow Condensed` uppercase headings, `DM Sans`, and `JetBrains Mono` tabular telemetry.
 
 ---
 
-## 🔌 Microservice Port Mapping
+## 🔌 Service & Port Mapping
 
-| Service | Port | Description |
-| :--- | :--- | :--- |
-| **API Gateway** | `8080` | Central reactive routing & authentication gateway |
-| **User Service** | `8081` | Manages athlete profiles and Google SSO synchronizations |
-| **Activity Service** | `8082` | Ingests workouts and publishes to RabbitMQ |
-| **AI Service** | `8083` | Generates structured coaching analyses via OpenRouter |
-| **Eureka Server** | `8761` | Dynamic microservice discovery registry |
-| **Config Server** | `8888` | Centralized external configuration repository |
-| **Keycloak SSO** | `8181` | OAuth2 & OIDC Identity Provider |
-| **RabbitMQ** | `5672` / `15672` | High-throughput AMQP message broker |
-| **PostgreSQL** | `5432` | Relational database (`fitness_user_db`) |
-| **MongoDB** | `27017` | Document database (`fitnessactivity`, `fitnessrecommendation`) |
-| **Frontend** | `5173` / `80` | Kinetic Dark athletic React dashboard |
+| Service | Port | Technology | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | `5173` / `80` | React 19 + Vite + Nginx | Kinetic Dark athletic UI |
+| **API Gateway** | `8080` | Spring Cloud Gateway | Central reactive routing & reverse proxy |
+| **User Service** | `8081` | Spring Boot + PostgreSQL | Profile management & Google SSO sync |
+| **Activity Service** | `8082` | Spring Boot + MongoDB + RabbitMQ | Workout logging & event publishing |
+| **AI Service** | `8083` | Spring Boot + OpenRouter | Neural coaching generation & on-demand recovery |
+| **Eureka Server** | `8761` | Netflix Eureka | Microservices discovery & heartbeat registry |
+| **Config Server** | `8888` | Spring Cloud Config | Centralized configuration repository |
+| **Keycloak SSO** | `8181` | Keycloak Identity | OAuth2 PKCE OpenID Connect provider |
+| **RabbitMQ** | `5672` / `15672` | RabbitMQ 3.13 Management | High-throughput message broker |
+| **PostgreSQL** | `5432` | PostgreSQL 17 | Relational database (`fitness_user_db`) |
+| **MongoDB** | `27017` | MongoDB 7.0 | Document store (`fitnessactivity`, `fitnessrecommendation`) |
 
 ---
 
 ## ⚡ 1-Click Production Docker Deployment
 
-### 1. Clone & Configure
+Deploy the entire platform (frontend + 5 microservices + PostgreSQL + MongoDB + RabbitMQ) with Docker Compose:
+
+### 1. Clone & Setup Environment
 ```bash
 git clone https://github.com/SiddharthaGupta-2005/fitness-tracker-microservices.git
 cd fitness-tracker-microservices
 cp .env.example .env
 ```
 
-### 2. Add your OpenRouter API Key in `.env`
+### 2. Configure OpenRouter API Key
+Edit `.env` and paste your key from [openrouter.ai/keys](https://openrouter.ai/keys):
 ```env
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_API_KEY=sk-or-v1-your-openrouter-key
 ```
 
 ### 3. Launch All 10 Containers
 ```bash
 docker compose up -d --build
 ```
-Open **`http://localhost:5173`** (or **`http://localhost`**) to use the application!
+Access the application at **`http://localhost:5173`** (or **`http://localhost`**)!
 
 ---
 
-## 💸 100% Free Cloud Deployment
+## 💸 100% Free Cloud Deployment ($0/Month)
 
-Looking to deploy to the cloud for **$0/month**?
-Check out our comprehensive step-by-step free guide:
-👉 **[FREE_DEPLOYMENT_GUIDE.md](FREE_DEPLOYMENT_GUIDE.md)** (Covers Vercel, MongoDB Atlas, Neon PostgreSQL, CloudAMQP, and Oracle Cloud Always-Free).
+Deploy the entire stack without credit card charges using free tiers:
+
+| Layer | Provider | Free Tier Benefits |
+| :--- | :--- | :--- |
+| **Frontend UI** | **[Vercel](https://vercel.com)** | 1-Click deploy from GitHub (Root: `fitness-tracker-frontend`) |
+| **MongoDB Database** | **[MongoDB Atlas](https://www.mongodb.com/atlas)** | 512MB M0 Cluster (**Free Forever**) |
+| **PostgreSQL Database** | **[Neon.tech](https://neon.tech)** | 500MB Serverless PostgreSQL (**Free Forever**) |
+| **RabbitMQ Broker** | **[CloudAMQP](https://www.cloudamqp.com/)** | "Little Lemur" Plan (**Free Forever**) |
+| **AI LLM Engine** | **[OpenRouter](https://openrouter.ai)** | Free-tier models (`openrouter/free`) |
+| **Full Stack VPS** | **[Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/)** | **4 OCPU, 24GB RAM Always-Free VPS** (Runs `docker compose` 24/7) |
 
 ---
 
 ## 🛠️ Local Development (IntelliJ IDEA)
 
-1. Start infrastructure services: **PostgreSQL (`5432`)**, **MongoDB (`27017`)**, **RabbitMQ (`5672`)**, and **Keycloak (`8181`)**.
-2. Run Spring Boot applications in this sequence:
+1. Ensure **PostgreSQL (`5432`)**, **MongoDB (`27017`)**, **RabbitMQ (`5672`)**, and **Keycloak (`8181`)** are running.
+2. Launch Spring Boot applications in sequence:
    - `EurekaApplication` (`:8761`)
    - `ConfigserverApplication` (`:8888`)
    - `GatewayApplication` (`:8080`)
    - `UserservicesApplication` (`:8081`)
    - `AcitvityservicesApplication` (`:8082`)
    - `AiserviceApplication` (`:8083`) *(Set `OPENROUTER_API_KEY=sk-or-v1-...` in Run Config)*
-3. Start frontend:
+3. Start frontend dev server:
    ```bash
    cd fitness-tracker-frontend
    npm install
@@ -124,4 +134,4 @@ Check out our comprehensive step-by-step free guide:
 ---
 
 ## 📜 License
-MIT License. Created by [Siddhartha Gupta](https://github.com/SiddharthaGupta-2005).
+MIT License. Developed by [Siddhartha Gupta](https://github.com/SiddharthaGupta-2005).
