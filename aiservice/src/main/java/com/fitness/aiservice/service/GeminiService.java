@@ -17,24 +17,24 @@ public class GeminiService {
 
     private final WebClient webClient;
 
-    @Value("${gemini.api.url:${groq.api.url:${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}}}")
-    private String geminiApiUrl;
+    @Value("${gemini.api.url:${openrouter.api.url:${OPENROUTER_API_URL:https://openrouter.ai/api/v1/chat/completions}}}")
+    private String apiUrl;
 
-    @Value("${groq.api.key:${gemini.api.key:${GROQ_API_KEY:${GEMINI_API_KEY:}}}}")
-    private String geminiApiKey;
+    @Value("${openrouter.api.key:${OPENROUTER_API_KEY:${groq.api.key:${GROQ_API_KEY:${gemini.api.key:${GEMINI_API_KEY:}}}}}}")
+    private String apiKey;
 
-    @Value("${groq.api.model:${GROQ_MODEL:}}")
-    private String groqModel;
+    @Value("${openrouter.api.model:${OPENROUTER_MODEL:}}")
+    private String customModel;
 
-    // Ordered list of candidate models supported by Groq
+    // High-speed, free models on OpenRouter
     private static final List<String> CANDIDATE_MODELS = List.of(
-            "llama-3.1-8b-instant",
-            "llama-3.3-70b-versatile",
-            "llama3-8b-8192",
-            "llama3-70b-8192",
-            "gemma2-9b-it",
-            "mixtral-8x7b-32768",
-            "qwen/qwen3.6-27b"
+            "openrouter/free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "meta-llama/llama-3.1-8b-instruct:free",
+            "google/gemini-2.0-flash-exp:free",
+            "google/gemini-flash-1.5:free",
+            "mistralai/mistral-7b-instruct:free",
+            "deepseek/deepseek-chat:free"
     );
 
     public GeminiService(WebClient.Builder webClientBuilder){
@@ -42,23 +42,24 @@ public class GeminiService {
     }
 
     public String getAnswer(String question){
-        String cleanUrl = geminiApiUrl != null && !geminiApiUrl.isBlank() 
-                ? geminiApiUrl.trim() 
-                : "https://api.groq.com/openai/v1/chat/completions";
-        String cleanKey = geminiApiKey != null ? geminiApiKey.trim() : "";
+        String cleanUrl = apiUrl != null && !apiUrl.isBlank() 
+                ? apiUrl.trim() 
+                : "https://openrouter.ai/api/v1/chat/completions";
+        String cleanKey = apiKey != null ? apiKey.trim() : "";
 
-        boolean isGroqOrOpenAI = cleanUrl.contains("groq.com") || cleanUrl.contains("openai") || cleanUrl.contains("openrouter");
+        boolean isOpenRouter = cleanUrl.contains("openrouter.ai");
+        boolean isOpenAICompatible = cleanUrl.contains("openrouter") || cleanUrl.contains("openai") || cleanUrl.contains("groq");
 
         log.info("AI Provider: {}, URL: {}, Key Present: {}", 
-                isGroqOrOpenAI ? "Groq AI" : "Legacy AI", 
+                isOpenRouter ? "OpenRouter" : (isOpenAICompatible ? "OpenAI Compatible" : "Direct AI"), 
                 cleanUrl, 
                 !cleanKey.isEmpty());
 
-        if (isGroqOrOpenAI) {
+        if (isOpenAICompatible) {
             // Build list of models to try
             List<String> modelsToTry = new ArrayList<>();
-            if (groqModel != null && !groqModel.isBlank()) {
-                modelsToTry.add(groqModel.trim());
+            if (customModel != null && !customModel.isBlank()) {
+                modelsToTry.add(customModel.trim());
             }
             for (String candidate : CANDIDATE_MODELS) {
                 if (!modelsToTry.contains(candidate)) {
@@ -69,28 +70,30 @@ public class GeminiService {
             Exception lastException = null;
             for (String currentModel : modelsToTry) {
                 try {
-                    log.info("Attempting Groq AI request with model: {}", currentModel);
+                    log.info("Attempting OpenRouter request with model: {}", currentModel);
                     Map<String, Object> requestBody = Map.of(
                             "model", currentModel,
                             "messages", List.of(
                                     Map.of("role", "system", "content", "You are an elite fitness trainer and exercise scientist. Always respond strictly in valid JSON format matching the schema requested by the user."),
                                     Map.of("role", "user", "content", question)
                             ),
-                            "response_format", Map.of("type", "json_object"),
-                            "temperature", 0.3
+                            "temperature", 0.3,
+                            "max_tokens", 1500
                     );
 
                     String response = webClient.post()
                             .uri(cleanUrl)
                             .header("Content-Type", "application/json")
                             .header("Authorization", "Bearer " + cleanKey)
+                            .header("HTTP-Referer", "http://localhost:5173")
+                            .header("X-Title", "FitPulse AI Fitness Tracker")
                             .bodyValue(requestBody)
                             .retrieve()
                             .onStatus(status -> status.isError(), clientResponse ->
                                     clientResponse.bodyToMono(String.class)
                                             .flatMap(errorBody -> {
-                                                log.warn("Groq Model [{}] Error [{}]: {}", currentModel, clientResponse.statusCode(), errorBody);
-                                                return Mono.error(new RuntimeException("Groq Error (" + currentModel + "): " + errorBody));
+                                                log.warn("OpenRouter Model [{}] Error [{}]: {}", currentModel, clientResponse.statusCode(), errorBody);
+                                                return Mono.error(new RuntimeException("OpenRouter Error (" + currentModel + "): " + errorBody));
                                             })
                             )
                             .bodyToMono(String.class)
@@ -99,18 +102,18 @@ public class GeminiService {
                             .block();
 
                     if (response != null && !response.isBlank()) {
-                        log.info("Successfully generated AI coaching report with Groq model: {}", currentModel);
+                        log.info("Successfully generated AI coaching report with OpenRouter model: {}", currentModel);
                         return response;
                     }
                 } catch (Exception ex) {
                     lastException = ex;
-                    log.warn("Model {} failed ({}), trying next available Groq model...", currentModel, ex.getMessage());
+                    log.warn("Model {} failed ({}), trying next available OpenRouter model...", currentModel, ex.getMessage());
                 }
             }
 
-            throw new RuntimeException("All candidate Groq models failed. Last error: " + (lastException != null ? lastException.getMessage() : "Unknown"));
+            throw new RuntimeException("All candidate OpenRouter models failed. Last error: " + (lastException != null ? lastException.getMessage() : "Unknown"));
         } else {
-            // Legacy / Fallback Request
+            // Direct / Fallback
             Map<String, Object> requestBody = Map.of(
                     "contents", new Object[]{
                             Map.of("parts", new Object[]{

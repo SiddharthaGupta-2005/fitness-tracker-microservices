@@ -66,16 +66,12 @@ public class ActivityAIService {
                 return createDefaultRecommendation(activity);
             }
 
-            String jsonContent = rawText;
-            if (jsonContent.startsWith("```json")) {
-                jsonContent = jsonContent.substring(7);
-            } else if (jsonContent.startsWith("```")) {
-                jsonContent = jsonContent.substring(3);
+            String jsonContent = rawText.trim();
+            int firstBrace = jsonContent.indexOf('{');
+            int lastBrace = jsonContent.lastIndexOf('}');
+            if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+                jsonContent = jsonContent.substring(firstBrace, lastBrace + 1);
             }
-            if (jsonContent.endsWith("```")) {
-                jsonContent = jsonContent.substring(0, jsonContent.length() - 3);
-            }
-            jsonContent = jsonContent.trim();
 
             JsonNode analysisJson = mapper.readTree(jsonContent);
             JsonNode analysisNode = analysisJson.path("analysis");
