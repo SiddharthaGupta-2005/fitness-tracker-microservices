@@ -1,0 +1,23 @@
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+*.secret
+
+# Build Targets
+target/
+**/target/
+dist/
+**/dist/
+node_modules/
+**/node_modules/
+
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Logs
+*.log
+logs/

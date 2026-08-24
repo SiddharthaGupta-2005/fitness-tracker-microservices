@@ -1,5 +1,24 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: user-service
   config:
     import: optional:configserver:http://localhost:8888
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-tiny-paper-b3u8aifr-pooler.c-4.ap-southeast-1.aws.neon.tech/fitness_user_db?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_woyLl1uk9WFg}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

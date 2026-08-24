@@ -4,17 +4,17 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessactivity?retryWrites=true&w=majority&appName=fitness-cluster
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/fitnessactivity}
       database: fitnessactivity
   mongodb:
-    uri: mongodb+srv://fittracker_admin:h05RtNwGAw8v9xx3@fitness-cluster.41bmibj.mongodb.net/fitnessactivity?retryWrites=true&w=majority&appName=fitness-cluster
+    uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/fitnessactivity}
     database: fitnessactivity
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 logging:
   level:
@@ -27,7 +27,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
 
 rabbitmq:
   exchange:
