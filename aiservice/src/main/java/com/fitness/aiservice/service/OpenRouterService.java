@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -40,68 +41,70 @@ public class OpenRouterService {
     }
 
     public String getAnswer(String question){
-        String cleanUrl = apiUrl != null && !apiUrl.isBlank() 
-                ? apiUrl.trim() 
-                : "https://openrouter.ai/api/v1/chat/completions";
-        String cleanKey = apiKey != null ? apiKey.trim() : "";
+        return CompletableFuture.supplyAsync(() -> {
+            String cleanUrl = apiUrl != null && !apiUrl.isBlank() 
+                    ? apiUrl.trim() 
+                    : "https://openrouter.ai/api/v1/chat/completions";
+            String cleanKey = apiKey != null ? apiKey.trim() : "";
 
-        log.info("AI Provider: OpenRouter, URL: {}, Key Present: {}", cleanUrl, !cleanKey.isEmpty());
+            log.info("AI Provider: OpenRouter, URL: {}, Key Present: {}", cleanUrl, !cleanKey.isEmpty());
 
-        // Build list of models to try
-        List<String> modelsToTry = new ArrayList<>();
-        if (customModel != null && !customModel.isBlank()) {
-            modelsToTry.add(customModel.trim());
-        }
-        for (String candidate : CANDIDATE_MODELS) {
-            if (!modelsToTry.contains(candidate)) {
-                modelsToTry.add(candidate);
+            // Build list of models to try
+            List<String> modelsToTry = new ArrayList<>();
+            if (customModel != null && !customModel.isBlank()) {
+                modelsToTry.add(customModel.trim());
             }
-        }
-
-        Exception lastException = null;
-        for (String currentModel : modelsToTry) {
-            try {
-                log.info("Attempting OpenRouter request with model: {}", currentModel);
-                Map<String, Object> requestBody = Map.of(
-                        "model", currentModel,
-                        "messages", List.of(
-                                Map.of("role", "system", "content", "You are an elite fitness trainer and exercise scientist. Always respond strictly in valid JSON format matching the schema requested by the user."),
-                                Map.of("role", "user", "content", question)
-                        ),
-                        "temperature", 0.3,
-                        "max_tokens", 1500
-                );
-
-                String response = webClient.post()
-                        .uri(cleanUrl)
-                        .header("Content-Type", "application/json")
-                        .header("Authorization", "Bearer " + cleanKey)
-                        .header("HTTP-Referer", "http://localhost:5173")
-                        .header("X-Title", "FitPulse AI Fitness Tracker")
-                        .bodyValue(requestBody)
-                        .retrieve()
-                        .onStatus(status -> status.isError(), clientResponse ->
-                                clientResponse.bodyToMono(String.class)
-                                        .flatMap(errorBody -> {
-                                            log.warn("OpenRouter Model [{}] Error [{}]: {}", currentModel, clientResponse.statusCode(), errorBody);
-                                            return Mono.error(new RuntimeException("OpenRouter Error (" + currentModel + "): " + errorBody));
-                                        })
-                        )
-                        .bodyToMono(String.class)
-                        .retryWhen(reactor.util.retry.Retry.backoff(1, Duration.ofMillis(500))
-                                .filter(t -> t.getMessage() != null && (t.getMessage().contains("503") || t.getMessage().contains("429"))))
-                        .block();
-
-                if (response != null && !response.isBlank()) {
-                    log.info("Successfully generated AI coaching report with OpenRouter model: {}", currentModel);
-                    return response;
+            for (String candidate : CANDIDATE_MODELS) {
+                if (!modelsToTry.contains(candidate)) {
+                    modelsToTry.add(candidate);
                 }
-            } catch (Exception ex) {
-                lastException = ex;
-                log.warn("Model {} failed ({}), trying next available OpenRouter model...", currentModel, ex.getMessage());
             }
-        }
 
-        throw new RuntimeException("All candidate OpenRouter models failed. Last error: " + (lastException != null ? lastException.getMessage() : "Unknown"));
+            Exception lastException = null;
+            for (String currentModel : modelsToTry) {
+                try {
+                    log.info("Attempting OpenRouter request with model: {}", currentModel);
+                    Map<String, Object> requestBody = Map.of(
+                            "model", currentModel,
+                            "messages", List.of(
+                                    Map.of("role", "system", "content", "You are an elite fitness trainer and exercise scientist. Always respond strictly in valid JSON format matching the schema requested by the user."),
+                                    Map.of("role", "user", "content", question)
+                            ),
+                            "temperature", 0.3,
+                            "max_tokens", 1500
+                    );
+
+                    String response = webClient.post()
+                            .uri(cleanUrl)
+                            .header("Content-Type", "application/json")
+                            .header("Authorization", "Bearer " + cleanKey)
+                            .header("HTTP-Referer", "http://localhost:5173")
+                            .header("X-Title", "FitPulse AI Fitness Tracker")
+                            .bodyValue(requestBody)
+                            .retrieve()
+                            .onStatus(status -> status.isError(), clientResponse ->
+                                    clientResponse.bodyToMono(String.class)
+                                            .flatMap(errorBody -> {
+                                                log.warn("OpenRouter Model [{}] Error [{}]: {}", currentModel, clientResponse.statusCode(), errorBody);
+                                                return Mono.error(new RuntimeException("OpenRouter Error (" + currentModel + "): " + errorBody));
+                                            })
+                            )
+                            .bodyToMono(String.class)
+                            .retryWhen(reactor.util.retry.Retry.backoff(1, Duration.ofMillis(500))
+                                    .filter(t -> t.getMessage() != null && (t.getMessage().contains("503") || t.getMessage().contains("429"))))
+                            .block();
+
+                    if (response != null && !response.isBlank()) {
+                        log.info("Successfully generated AI coaching report with OpenRouter model: {}", currentModel);
+                        return response;
+                    }
+                } catch (Exception ex) {
+                    lastException = ex;
+                    log.warn("Model {} failed ({}), trying next available OpenRouter model...", currentModel, ex.getMessage());
+                }
+            }
+
+            throw new RuntimeException("All candidate OpenRouter models failed. Last error: " + (lastException != null ? lastException.getMessage() : "Unknown"));
+        }).join();
     }
 }

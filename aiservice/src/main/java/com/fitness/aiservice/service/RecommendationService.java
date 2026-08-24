@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -36,31 +37,37 @@ public class RecommendationService {
             return existing;
         }
 
-        // On-demand AI generation fallback if not generated yet or previous run failed
+        // Run on-demand generation in a separate thread pool so Reactor Netty threads are not blocked
         try {
-            log.info("On-demand AI report requested for activity ID: {}", activityId);
-            Activity activity = webClientBuilder.build()
-                    .get()
-                    .uri(activityServiceUrl + "/" + activityId)
-                    .retrieve()
-                    .bodyToMono(Activity.class)
-                    .block();
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    log.info("On-demand AI report requested for activity ID: {}", activityId);
+                    Activity activity = webClientBuilder.build()
+                            .get()
+                            .uri(activityServiceUrl + "/" + activityId)
+                            .retrieve()
+                            .bodyToMono(Activity.class)
+                            .block();
 
-            if (activity != null) {
-                Recommendation freshRec = activityAIService.generateRecommendation(activity);
-                if (freshRec != null) {
-                    if (existing.isPresent()) {
-                        freshRec.setId(existing.get().getId());
+                    if (activity != null) {
+                        Recommendation freshRec = activityAIService.generateRecommendation(activity);
+                        if (freshRec != null) {
+                            if (existing.isPresent()) {
+                                freshRec.setId(existing.get().getId());
+                            }
+                            Recommendation saved = recommendationRepository.save(freshRec);
+                            log.info("Successfully generated and saved on-demand AI recommendation for activity: {}", activityId);
+                            return Optional.of(saved);
+                        }
                     }
-                    Recommendation saved = recommendationRepository.save(freshRec);
-                    log.info("Successfully generated and saved on-demand AI recommendation for activity: {}", activityId);
-                    return Optional.of(saved);
+                } catch (Exception e) {
+                    log.warn("On-demand AI generation failed for activity {}: {}", activityId, e.getMessage());
                 }
-            }
+                return existing;
+            }).join();
         } catch (Exception ex) {
-            log.warn("Could not on-demand generate AI report for activity {}: {}", activityId, ex.getMessage());
+            log.warn("Could not execute on-demand AI report for activity {}: {}", activityId, ex.getMessage());
+            return existing;
         }
-
-        return existing;
     }
 }
