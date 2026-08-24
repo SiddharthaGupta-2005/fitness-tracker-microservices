@@ -40,7 +40,7 @@ public class ActivityService {
                 .type(request.getType())
                 .duration(request.getDuration())
                 .caloriesBurned(request.getCaloriesBurned())
-                .startTime(request.getStartTime())
+                .startTime(request.getStartTime() != null ? request.getStartTime() : java.time.LocalDateTime.now())
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 

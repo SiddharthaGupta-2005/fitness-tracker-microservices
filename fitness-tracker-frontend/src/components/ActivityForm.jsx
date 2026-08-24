@@ -86,7 +86,7 @@ const ActivityForm = ({ onActivitiesAdded }) => {
     setErrorMsg('');
 
     try {
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId') || 'athlete-user';
       await addActivity({
         ...activity,
         userId: userId,
@@ -105,7 +105,8 @@ const ActivityForm = ({ onActivitiesAdded }) => {
       setTimeout(() => setSuccessMsg(''), 6000);
     } catch (error) {
       console.error('Error adding activity:', error);
-      setErrorMsg('Failed to log activity. Please check that Activity Service is running.');
+      const serverMsg = error.response?.data?.message || error.response?.data?.error;
+      setErrorMsg(serverMsg ? `Error: ${serverMsg}` : 'Failed to log activity. Please check that Activity Service is running.');
     } finally {
       setLoading(false);
     }

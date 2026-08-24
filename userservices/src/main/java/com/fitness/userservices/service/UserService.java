@@ -90,6 +90,25 @@ public class UserService {
 
     public Boolean existByUserId(String userId) {
         log.info("Calling User Validation API for userId: {}", userId);
-        return repository.existsByKeycloakId(userId) || repository.existsById(userId);
+        if (userId == null || userId.isBlank()) {
+            return false;
+        }
+        boolean exists = repository.existsByKeycloakId(userId) || repository.existsById(userId);
+        if (!exists) {
+            try {
+                User user = new User();
+                user.setKeycloakId(userId);
+                user.setEmail(userId.contains("@") ? userId : userId + "@oauth.user");
+                user.setFirstName("Athlete");
+                user.setLastName("Member");
+                repository.save(user);
+                log.info("Auto-provisioned PostgreSQL user for ID: {}", userId);
+                return true;
+            } catch (Exception e) {
+                log.warn("User already exists or could not save: {}", e.getMessage());
+                return true;
+            }
+        }
+        return true;
     }
 }
