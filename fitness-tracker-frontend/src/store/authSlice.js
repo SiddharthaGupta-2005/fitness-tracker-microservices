@@ -1,23 +1,38 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
 
-
+const getInitialUser = () => {
+    try {
+        const item = localStorage.getItem('user');
+        return item ? JSON.parse(item) : null;
+    } catch {
+        return null;
+    }
+};
 
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
-        user: JSON.parse(localStorage.getItem('user')) || null,
+        user: getInitialUser(),
         token: localStorage.getItem('token') || null,
         userId: localStorage.getItem('userId') || null,
     },
     reducers: {
         setCredentials: (state, action) => {
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-            state.userId = action.payload.user.sub;
+            const user = action.payload.user || {};
+            const token = action.payload.token || null;
+            const uid = user.sub || user.id || user.userId || user.preferred_username || user.email || 'user';
+            
+            state.user = user;
+            state.token = token;
+            state.userId = uid;
 
-            localStorage.setItem('token', action.payload.token);
-            localStorage.setItem('user', JSON.stringify(action.payload.user));
-            localStorage.setItem('userId', action.payload.user.sub);
+            if (token) {
+                localStorage.setItem('token', token);
+            }
+            if (action.payload.user) {
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            localStorage.setItem('userId', uid);
         },
         logout: (state) => {
             state.user = null;
@@ -28,7 +43,7 @@ const authSlice = createSlice({
             localStorage.removeItem('userId');
         },
     },
-})
+});
 
-export const { setCredentials, logout } = authSlice.actions
-export default authSlice.reducer
+export const { setCredentials, logout } = authSlice.actions;
+export default authSlice.reducer;

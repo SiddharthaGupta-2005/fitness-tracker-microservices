@@ -6,8 +6,22 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token')
+    let userId = localStorage.getItem('userId');
+    let token = localStorage.getItem('token');
+
+    // Fallback to sessionStorage if OAuth PKCE stored tokens there
+    if (!token) {
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.includes('token') && !key.includes('expire')) {
+                const val = sessionStorage.getItem(key);
+                if (val && val.startsWith('ey')) { // JWT format
+                    token = val;
+                    break;
+                }
+            }
+        }
+    }
 
     if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
@@ -16,7 +30,7 @@ api.interceptors.request.use((config) => {
         config.headers['X-User-ID'] = userId;
     }
     return config;
-})
+});
 
 export const getActivities = () => api.get('/activities');
 export const addActivity = (activity) => api.post('/activities', activity);
