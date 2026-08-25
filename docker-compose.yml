@@ -16,11 +16,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d fitness_user_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - fitness-network
 
@@ -35,11 +30,6 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - fitness-network
 
@@ -56,11 +46,6 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - fitness-network
 
@@ -79,6 +64,7 @@ services:
       SERVER_PORT: 8761
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
       EUREKA_CLIENT_FETCH_REGISTRY: "false"
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     networks:
       - fitness-network
 
@@ -96,6 +82,7 @@ services:
     environment:
       SERVER_PORT: 8888
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
       - eureka
     networks:
@@ -118,11 +105,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
-      postgres:
-        condition: service_healthy
-      eureka:
-        condition: service_started
+      - postgres
+      - eureka
     networks:
       - fitness-network
 
@@ -146,13 +132,11 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      eureka:
-        condition: service_started
+      - mongodb
+      - rabbitmq
+      - eureka
     networks:
       - fitness-network
 
@@ -178,13 +162,11 @@ services:
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openrouter/free}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      eureka:
-        condition: service_started
+      - mongodb
+      - rabbitmq
+      - eureka
     networks:
       - fitness-network
 
@@ -202,6 +184,7 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8888
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
       - eureka
       - configserver
