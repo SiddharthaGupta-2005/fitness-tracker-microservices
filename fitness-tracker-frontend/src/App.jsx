@@ -92,9 +92,17 @@ function App() {
     }
   };
 
+  const handleManualAuth = (userData, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('userId', userData.sub || userData.email);
+    dispatch(setCredentials({ token, user: userData }));
+    setInAppAuth({ token, user: userData });
+  };
+
   const handleGoogleLogin = () => {
     try {
-      // In cloud deployments (Vercel) without standalone Keycloak container, provide instant 1-click Google athlete access:
+      // In cloud deployments (Vercel/Oracle) without standalone Keycloak container, provide instant 1-click Google athlete access:
       if (window.location.hostname !== 'localhost' && !import.meta.env.VITE_KEYCLOAK_URL) {
         const cloudUser = {
           name: 'Siddhartha (Google Athlete)',
@@ -102,11 +110,7 @@ function App() {
           sub: 'google-oauth2-cloud-athlete'
         };
         const demoToken = 'ey.cloud.token.' + Date.now();
-        localStorage.setItem('token', demoToken);
-        localStorage.setItem('user', JSON.stringify(cloudUser));
-        localStorage.setItem('userId', cloudUser.sub);
-        dispatch(setCredentials({ token: demoToken, user: cloudUser }));
-        setInAppAuth({ token: demoToken, user: cloudUser });
+        handleManualAuth(cloudUser, demoToken);
 
         registerUser({
           keycloakId: cloudUser.sub,
@@ -132,7 +136,7 @@ function App() {
       <CssBaseline />
       <Router>
         {!effectiveToken ? (
-          <LoginHero onGoogleLogin={handleGoogleLogin} />
+          <LoginHero onGoogleLogin={handleGoogleLogin} onManualAuth={handleManualAuth} />
         ) : (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0c0c0f' }}>
             <Navbar user={effectiveUser} onLogout={handleLogout} />
