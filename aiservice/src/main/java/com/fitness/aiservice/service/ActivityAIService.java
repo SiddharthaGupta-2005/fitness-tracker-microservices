@@ -88,7 +88,7 @@ public class ActivityAIService {
     }
 
     private Recommendation createDefaultRecommendation(Activity activity){
-        String type = activity.getType() != null ? activity.getType().name() : "WORKOUT";
+        String type = activity.getType() != null ? activity.getType() : "WORKOUT";
         int duration = activity.getDuration() != null ? activity.getDuration() : 30;
         int calories = activity.getCaloriesBurned() != null ? activity.getCaloriesBurned() : 250;
         double burnRate = duration > 0 ? (double) calories / duration : 8.0;
