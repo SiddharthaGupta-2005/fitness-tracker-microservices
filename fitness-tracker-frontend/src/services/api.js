@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const getApiUrl = () => {
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+    // When running on remote server (e.g. Oracle Cloud VPS IP) via Nginx reverse proxy
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+        return `${window.location.origin}/api`;
+    }
+    return 'http://localhost:8080/api';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
     baseURL: API_URL
