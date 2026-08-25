@@ -7,10 +7,12 @@
 # Build Targets
 target/
 **/target/
-dist/
-**/dist/
 node_modules/
 **/node_modules/
+
+# Allow frontend production dist bundle
+!fitness-tracker-frontend/dist/
+!fitness-tracker-frontend/dist/**
 
 # IDE & Editor files
 .idea/
