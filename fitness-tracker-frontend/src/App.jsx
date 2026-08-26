@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router';
 import { Box, Container, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthContext } from 'react-oauth2-code-pkce';
 import { useDispatch, useSelector } from 'react-redux';
+import { Analytics } from '@vercel/analytics/react';
 import { setCredentials, logout } from './store/authSlice';
 import { darkTheme } from './theme';
 
@@ -134,6 +135,7 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <Analytics />
       <Router>
         {!effectiveToken ? (
           <LoginHero onGoogleLogin={handleGoogleLogin} onManualAuth={handleManualAuth} />
