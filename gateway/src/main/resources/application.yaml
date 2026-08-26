@@ -1,32 +1,5 @@
-server:
-  port: ${PORT:${SERVER_PORT:8080}}
-
 spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:http://localhost:8888
-  main:
-    banner-mode: off
-  cloud:
-    gateway:
-      routes:
-        - id: user-service
-          uri: ${USER_SERVICE_URI:lb://USER-SERVICE}
-          predicates:
-            - Path=/api/users/**
-
-        - id: activity-service
-          uri: ${ACTIVITY_SERVICE_URI:lb://ACTIVITY-SERVICE}
-          predicates:
-            - Path=/api/activities/**
-
-        - id: ai-service
-          uri: ${AI_SERVICE_URI:lb://AI-SERVICE}
-          predicates:
-            - Path=/api/recommendations/**
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
